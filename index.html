@@ -3,472 +3,912 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>单品生死线筛查 · Pre-Trade Check</title>
-<meta name="description" content="跨境选品的单位经济与现金流生死线筛查工具">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<title>TikTok Shop 东南亚利润计算器</title>
+<meta name="description" content="TikTok Shop 东南亚单品利润、费用、物流、达人佣金、获客成本与人民币换算计算器">
 <style>
   :root{
-    --ground:#0E1614; --panel:#14201D; --panel-2:#101A18;
-    --line:#283A34; --line-soft:#1D2B27;
-    --ink:#E8EDEA; --mute:#7E928B; --mute-2:#5E716B;
-    --pass:#34C28A; --warn:#E0A93B; --fail:#E5564B; --focus:#4FD0C0;
-    --mono:"IBM Plex Mono","SF Mono",ui-monospace,Menlo,monospace;
-    --cjk:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",sans-serif;
+    --bg:#0c1110;
+    --panel:#121b19;
+    --panel-2:#172320;
+    --panel-3:#0f1715;
+    --line:#263631;
+    --line-soft:#1c2a26;
+    --ink:#eef5f1;
+    --muted:#93a39d;
+    --muted-2:#667770;
+    --green:#35c486;
+    --amber:#e2aa3d;
+    --red:#ee665b;
+    --cyan:#57d3c4;
+    --blue:#8fb4ff;
+    --white:#ffffff;
+    --mono:"SFMono-Regular","Cascadia Code","Liberation Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{background:#0A1210;padding:24px 16px;min-height:100vh;font-family:var(--cjk)}
-  .wrap{
+  body{
+    min-height:100vh;
+    background:
+      linear-gradient(180deg,rgba(22,34,31,.78),rgba(12,17,16,1) 360px),
+      var(--bg);
     color:var(--ink);
-    background:radial-gradient(120% 80% at 100% 0%, #16241F 0%, transparent 55%), var(--ground);
-    border:1px solid var(--line);border-radius:14px;overflow:hidden;max-width:980px;margin:0 auto;
+    font-family:var(--sans);
     -webkit-font-smoothing:antialiased;
+    padding:18px;
   }
-  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-
-  .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#16231F,#101A17)}
-  .hd-l{display:flex;align-items:baseline;gap:12px;min-width:0}
-  .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--focus);white-space:nowrap}
-  .title{font-weight:700;font-size:16px;white-space:nowrap}
-  .cur{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mute)}
-  .cur select{font-family:var(--mono);background:#0C1513;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:13px}
-  .cur select:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-
-  .verdict{position:sticky;top:0;z-index:5;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--panel-2);transition:box-shadow .25s ease}
-  .v-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .v-stamp{font-weight:700;font-size:26px;line-height:1;padding:9px 16px;border-radius:9px;border:1.5px solid currentColor;display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
-  .v-stamp .dot{width:9px;height:9px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
-  .v-reason{font-size:13.5px;color:var(--ink);line-height:1.5;flex:1;min-width:200px}
-  .v-reason b{font-family:var(--mono);font-weight:600}
-
-  .lights{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
-  .light{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:var(--panel);display:flex;flex-direction:column;gap:5px}
-  .light .row1{display:flex;align-items:center;gap:8px}
-  .light .led{width:9px;height:9px;border-radius:50%;background:var(--mute-2);flex:none;transition:background .2s, box-shadow .2s}
-  .light .name{font-size:12.5px;font-weight:600;color:var(--ink)}
-  .light .stat{font-size:11.5px;color:var(--mute);line-height:1.45;min-height:16px}
-  .light.is-pass .led{background:var(--pass);box-shadow:0 0 9px var(--pass)}
-  .light.is-warn .led{background:var(--warn);box-shadow:0 0 9px var(--warn)}
-  .light.is-fail .led{background:var(--fail);box-shadow:0 0 9px var(--fail)}
-
-  .body{display:grid;grid-template-columns:1.05fr .95fr;gap:0}
-  .col{padding:18px}
-  .col.inputs{border-right:1px solid var(--line)}
-
-  .group{margin-bottom:20px}
-  .group:last-child{margin-bottom:4px}
-  .g-hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin:0 0 10px;display:flex;align-items:center;gap:9px}
-  .g-hd::after{content:"";flex:1;height:1px;background:var(--line-soft)}
-  .g-hint{font-size:11.5px;color:var(--mute-2);line-height:1.55;margin:-3px 0 11px}
-
-  .field{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
-  .field label{font-size:13px;color:var(--ink);line-height:1.3}
-  .field .sub{display:block;font-size:10.5px;color:var(--mute-2);margin-top:1px}
-  .inp{position:relative;flex:none;width:118px}
-  .inp input{width:100%;font-family:var(--mono);font-variant-numeric:tabular-nums;background:#0B1311;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 26px 8px 10px;font-size:14px;text-align:right}
-  .inp input:focus-visible{outline:none;border-color:var(--focus);box-shadow:0 0 0 2px rgba(79,208,192,.22)}
-  .inp .affix{position:absolute;top:50%;transform:translateY(-50%);right:9px;font-family:var(--mono);font-size:12px;color:var(--mute);pointer-events:none}
-  .inp.left .affix{right:auto;left:9px}
-  .inp.left input{padding:8px 10px 8px 22px;text-align:right}
-  .field.accent label{color:var(--focus)}
-
-  .read{border:1px solid var(--line);border-radius:11px;background:var(--panel);overflow:hidden;margin-bottom:14px}
-  .read-hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);padding:10px 13px;border-bottom:1px solid var(--line-soft);background:var(--panel-2)}
-  .ro{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid var(--line-soft)}
-  .ro:last-child{border-bottom:none}
-  .ro .k{font-size:12.5px;color:var(--mute);line-height:1.4}
-  .ro .k .tag{display:block;font-size:10.5px;color:var(--mute-2);margin-top:1px}
-  .ro .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:18px;font-weight:500;white-space:nowrap;text-align:right}
-  .ro .v.sm{font-size:14px}
-  .ro.hero{background:linear-gradient(180deg,#16241F,transparent)}
-  .ro.hero .v{font-size:22px;font-weight:600}
-  .ro.divider{padding:7px 13px;background:var(--panel-2);border-bottom:1px solid var(--line-soft)}
-  .ro.divider .k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--focus)}
-  .v-pass{color:var(--pass)}.v-warn{color:var(--warn)}.v-fail{color:var(--fail)}.v-neutral{color:var(--ink)}
-
-  .barwrap{padding:4px 13px 13px}
-  .bar{height:7px;border-radius:4px;background:#0B1311;border:1px solid var(--line-soft);overflow:hidden;position:relative}
-  .bar i{position:absolute;inset:0 auto 0 0;border-radius:4px;transition:width .25s ease, background .25s ease}
-  .bar-lab{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--mono);font-size:10.5px;color:var(--mute-2)}
-
-  /* compare */
-  .cmp{border-top:1px solid var(--line);padding:16px 18px;background:var(--panel-2)}
-  .cmp-add{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-  .cmp-add input{flex:1;min-width:150px;font-family:var(--cjk);background:#0B1311;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px}
-  .cmp-add input:focus-visible{outline:none;border-color:var(--focus);box-shadow:0 0 0 2px rgba(79,208,192,.22)}
-  .cmp-tablewrap{overflow-x:auto;border:1px solid var(--line-soft);border-radius:10px}
-  table.cmp-t{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
-  table.cmp-t th{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute-2);text-align:right;padding:9px 11px;border-bottom:1px solid var(--line);background:var(--panel)}
-  table.cmp-t th:first-child{text-align:left}
-  table.cmp-t td{padding:10px 11px;border-bottom:1px solid var(--line-soft);text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
-  table.cmp-t tr:last-child td{border-bottom:none}
-  table.cmp-t td:first-child{text-align:left;font-family:var(--cjk);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .cmp-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
-  .cmp-empty{font-size:12px;color:var(--mute-2);padding:14px 4px;text-align:center}
-  .cmp-act{cursor:pointer;color:var(--mute);border:1px solid var(--line);background:#0C1513;border-radius:6px;font-family:var(--cjk);font-size:11.5px;padding:4px 9px;margin-left:5px}
-  .cmp-act:hover{color:var(--ink);border-color:var(--focus)}
-  .cmp-act.del:hover{color:var(--fail);border-color:var(--fail)}
-
-  .ft{border-top:1px solid var(--line);padding:14px 18px;background:var(--panel-2)}
-  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px}
-  .btn{font-family:var(--cjk);font-size:13px;color:var(--ink);cursor:pointer;background:#0C1513;border:1px solid var(--line);border-radius:8px;padding:9px 14px;transition:border-color .15s, color .15s}
-  .btn:hover{border-color:var(--focus);color:#fff}
-  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-  .btn.primary{border-color:var(--pass);color:var(--pass)}
-  .btn.primary:hover{background:rgba(52,194,138,.1)}
-  details.logic{margin-top:14px;border:1px solid var(--line-soft);border-radius:9px;background:#0C1513}
-  details.logic summary{cursor:pointer;list-style:none;padding:11px 14px;font-size:12.5px;color:var(--mute);display:flex;align-items:center;gap:8px}
-  details.logic summary::-webkit-details-marker{display:none}
-  details.logic summary::before{content:"▸";color:var(--focus);font-size:11px;transition:transform .15s}
-  details.logic[open] summary::before{transform:rotate(90deg)}
-  details.logic .inner{padding:2px 16px 15px;font-size:12px;color:var(--mute);line-height:1.7}
-  details.logic .inner code{font-family:var(--mono);color:var(--ink);background:#0B1311;padding:1px 5px;border-radius:4px;font-size:11.5px}
-  details.logic .inner b{color:var(--ink)}
-  details.logic .inner ul{margin:6px 0;padding-left:18px}
-  details.logic .inner li{margin:4px 0}
-
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);background:#0B1311;border:1px solid var(--pass);color:var(--pass);font-size:12.5px;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:20;font-family:var(--cjk)}
+  button,input,select{font:inherit}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .app{max-width:1240px;margin:0 auto;border:1px solid var(--line);background:var(--panel);border-radius:8px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.26)}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--panel-3)}
+  .brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);white-space:nowrap}
+  h1{font-size:18px;line-height:1.2;margin:0;font-weight:750;letter-spacing:0}
+  .marketbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .select,.input,.btn{border:1px solid var(--line);background:#0b1412;color:var(--ink);border-radius:7px}
+  .select{height:36px;padding:0 34px 0 10px}
+  .btn{height:36px;padding:0 12px;cursor:pointer;color:var(--ink)}
+  .btn:hover{border-color:var(--cyan);color:var(--white)}
+  .btn.primary{border-color:rgba(53,196,134,.75);color:var(--green)}
+  .btn.danger:hover{border-color:var(--red);color:var(--red)}
+  .mini{font-size:12px;color:var(--muted)}
+  .status{position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);background:rgba(15,23,21,.96);backdrop-filter:blur(12px);padding:14px 18px}
+  .verdict{display:grid;grid-template-columns:220px 1fr;gap:14px;align-items:center}
+  .stamp{display:flex;align-items:center;justify-content:center;gap:9px;min-height:50px;border:1.5px solid currentColor;border-radius:8px;font-weight:800;font-size:24px;line-height:1;color:var(--amber)}
+  .dot{width:9px;height:9px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor;flex:none}
+  .reason{font-size:14px;line-height:1.55;color:var(--ink)}
+  .reason b{font-family:var(--mono);font-weight:700}
+  .lights{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+  .light{min-height:76px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);padding:10px 11px}
+  .light-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+  .light-led{width:8px;height:8px;border-radius:50%;background:var(--muted-2);flex:none}
+  .light-stat{font-size:12px;line-height:1.45;color:var(--muted);margin-top:6px}
+  .light.pass .light-led{background:var(--green);box-shadow:0 0 10px var(--green)}
+  .light.warn .light-led{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+  .light.fail .light-led{background:var(--red);box-shadow:0 0 10px var(--red)}
+  .body{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(420px,.95fr);gap:0}
+  .left{border-right:1px solid var(--line);padding:16px}
+  .right{padding:16px;background:#101816}
+  .section{margin-bottom:22px}
+  .section:last-child{margin-bottom:0}
+  .section-head{display:flex;align-items:center;gap:10px;margin:0 0 10px;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  .section-head:after{content:"";height:1px;background:var(--line-soft);flex:1}
+  .hint{margin:-4px 0 14px;color:var(--muted-2);font-size:12px;line-height:1.55}
+  .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 34px}
+  .field{display:grid;grid-template-columns:minmax(146px,210px) minmax(132px,150px);gap:12px;align-items:center;justify-content:start;min-width:0}
+  .field.wide{grid-column:1/-1;grid-template-columns:minmax(220px,360px) minmax(132px,150px)}
+  label{font-size:13px;line-height:1.25;color:var(--ink);min-width:0}
+  label small{display:block;color:var(--muted-2);font-size:11px;margin-top:2px}
+  .control{position:relative}
+  .control .input{width:100%;height:36px;padding:8px 35px 8px 10px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .control .input:focus,.select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(87,211,196,.18)}
+  .affix{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--muted);pointer-events:none}
+  .preview{display:block;margin-top:4px;text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted-2);min-height:14px}
+  .control .select{width:100%;height:36px;padding:0 10px}
+  .result-pill{display:flex;align-items:center;justify-content:flex-end;min-height:36px;padding:8px 10px;border:1px solid var(--line-soft);border-radius:7px;background:#0b1412;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--green);text-align:right}
+  .fx-row{display:grid;grid-template-columns:minmax(220px,360px) minmax(132px,150px);gap:12px;align-items:center;justify-content:start;margin-bottom:9px}
+  .fx-row .input{width:100%;height:36px;padding:8px 10px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .notice{border:1px solid var(--line-soft);background:#0b1412;border-radius:8px;padding:10px 12px;color:var(--muted);font-size:12px;line-height:1.55}
+  .notice strong{color:var(--ink)}
+  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+  .metric{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:12px}
+  .metric.hero{grid-column:1/-1;background:linear-gradient(180deg,#192721,#121b19)}
+  .metric .name{font-size:12px;color:var(--muted);line-height:1.35}
+  .metric .value{margin-top:5px;font-size:22px;font-weight:800;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .metric.hero .value{font-size:34px}
+  .metric .sub{margin-top:4px;font-size:11px;color:var(--muted-2);line-height:1.35}
+  .good{color:var(--green)}.mid{color:var(--amber)}.bad{color:var(--red)}.plain{color:var(--ink)}.info{color:var(--blue)}
+  .read{border:1px solid var(--line);border-radius:8px;background:var(--panel);overflow:hidden;margin-bottom:14px}
+  .read-title{padding:10px 12px;border-bottom:1px solid var(--line-soft);background:var(--panel-3);font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+  .row{display:flex;justify-content:space-between;gap:14px;align-items:baseline;border-bottom:1px solid var(--line-soft);padding:10px 12px}
+  .row:last-child{border-bottom:0}
+  .row .k{font-size:12px;color:var(--muted);line-height:1.35}
+  .row .k small{display:block;color:var(--muted-2);font-size:10.5px;margin-top:2px}
+  .row .v{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:14px;white-space:nowrap}
+  .bar-wrap{padding:0 12px 12px}
+  .bar{height:8px;border:1px solid var(--line-soft);background:#0b1412;border-radius:4px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--green);transition:width .2s ease, background .2s ease}
+  .bar-label{display:flex;justify-content:space-between;margin-top:6px;color:var(--muted-2);font-size:11px;font-family:var(--mono)}
+  .exchange{overflow-x:auto;border:1px solid var(--line-soft);border-radius:8px}
+  table{width:100%;border-collapse:collapse;min-width:620px}
+  th,td{padding:9px 10px;border-bottom:1px solid var(--line-soft);text-align:right;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+  th:first-child,td:first-child{text-align:left;font-family:var(--sans)}
+  th{color:var(--muted-2);background:var(--panel-3);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+  tr:last-child td{border-bottom:0}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .save-line{display:grid;grid-template-columns:1fr auto;gap:8px}
+  .save-line .input{height:36px;padding:8px 10px;text-align:left}
+  .converter{display:grid;grid-template-columns:minmax(110px,1fr) 150px minmax(120px,1fr);gap:10px;align-items:center;padding:12px}
+  .converter label{color:var(--muted);font-size:12px}
+  .converter-result{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--green);text-align:right;font-size:14px}
+  .saved-empty{padding:12px;color:var(--muted-2);font-size:12px;text-align:center}
+  .act{height:28px;border:1px solid var(--line);background:#0b1412;color:var(--muted);border-radius:6px;cursor:pointer;font-size:12px;padding:0 8px}
+  .act:hover{border-color:var(--cyan);color:var(--ink)}
+  details{border:1px solid var(--line-soft);border-radius:8px;background:#0b1412;margin-top:12px}
+  summary{cursor:pointer;padding:11px 12px;color:var(--muted);font-size:12px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  .logic{padding:0 12px 13px;color:var(--muted);font-size:12px;line-height:1.7}
+  .logic code{font-family:var(--mono);font-size:11px;color:var(--ink);background:#111d1a;border:1px solid var(--line-soft);border-radius:4px;padding:1px 5px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(12px);opacity:0;pointer-events:none;background:#0b1412;color:var(--green);border:1px solid var(--green);border-radius:8px;padding:10px 14px;font-size:13px;transition:.18s ease;z-index:30}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-  @media (max-width:760px){
-    body{padding:12px 8px}
+  @media (max-width:980px){
+    body{padding:10px}
+    .topbar{align-items:flex-start;flex-direction:column}
+    .marketbar{justify-content:flex-start}
     .body{grid-template-columns:1fr}
-    .col.inputs{border-right:none;border-bottom:1px solid var(--line)}
-    .v-stamp{font-size:22px}
-    .lights{grid-template-columns:1fr}
-    .inp{width:108px}
+    .left{border-right:0;border-bottom:1px solid var(--line)}
+    .verdict{grid-template-columns:1fr}
+    .lights{grid-template-columns:repeat(2,1fr)}
   }
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  @media (max-width:640px){
+    .fields{grid-template-columns:1fr}
+    .field,.field.wide{grid-column:auto;grid-template-columns:minmax(0,1fr) 128px}
+    .fx-row{grid-template-columns:minmax(0,1fr) 128px}
+    .cards{grid-template-columns:1fr}
+    .metric.hero .value{font-size:28px}
+    .lights{grid-template-columns:1fr}
+    .save-line{grid-template-columns:1fr}
+    .converter{grid-template-columns:1fr}
+    .converter-result{text-align:left}
+  }
+  @media (max-width:430px){
+    .field,.field.wide,.fx-row{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;scroll-behavior:auto!important}
+  }
 </style>
 </head>
 <body>
-
-<div class="wrap" role="region" aria-label="单品生死线筛查工具">
-
-  <div class="hd">
-    <div class="hd-l">
-      <span class="kicker">Pre-Trade Check</span>
-      <span class="title">单品生死线筛查</span>
+<main class="app" aria-label="TikTok Shop 东南亚利润计算器">
+  <header class="topbar">
+    <div class="brand">
+      <span class="kicker">TikTok Shop SEA</span>
+      <h1>东南亚单品利润计算器</h1>
     </div>
-    <div class="cur">
-      <span>货币</span>
-      <select id="cur" aria-label="选择货币符号">
-        <option value="$" selected>$</option>
-        <option value="¥">¥</option>
-        <option value="€">€</option>
-        <option value="£">£</option>
-      </select>
+    <div class="marketbar">
+      <span class="mini">站点</span>
+      <select id="market" class="select" aria-label="选择东南亚站点"></select>
+      <button id="presetBtn" class="btn primary" type="button">套用站点示例</button>
     </div>
-  </div>
+  </header>
 
-  <div class="verdict" id="verdict">
-    <div class="v-top">
-      <span class="v-stamp" id="stamp"><span class="dot"></span><span id="stampText">计算中</span></span>
-      <span class="v-reason" id="reason">填入下面的数字,结论会实时更新。</span>
+  <section class="status">
+    <div class="verdict">
+      <div id="stamp" class="stamp"><span class="dot"></span><span id="stampText">计算中</span></div>
+      <div id="reason" class="reason">填入售价、成本、佣金和物流，系统会按人民币到手利润实时计算。</div>
     </div>
     <div class="lights">
-      <div class="light" id="L1"><div class="row1"><span class="led"></span><span class="name">① 每单赚钱</span></div><div class="stat" id="L1s">含获客成本后,单件是否还为正</div></div>
-      <div class="light" id="L2"><div class="row1"><span class="led"></span><span class="name">② 利润够厚</span></div><div class="stat" id="L2s">利润率能否扛住退货 / 广告 / 汇率波动</div></div>
-      <div class="light" id="L3"><div class="row1"><span class="led"></span><span class="name">③ 现金撑得住</span></div><div class="stat" id="L3s">周转垫付现金是否超过你的启动资金</div></div>
+      <div id="lightProfit" class="light"><div class="light-title"><span class="light-led"></span><span>每单到手</span></div><div id="lightProfitText" class="light-stat">等待计算</div></div>
+      <div id="lightMargin" class="light"><div class="light-title"><span class="light-led"></span><span>利润厚度</span></div><div id="lightMarginText" class="light-stat">等待计算</div></div>
+      <div id="lightMarketing" class="light"><div class="light-title"><span class="light-led"></span><span>广告达人</span></div><div id="lightMarketingText" class="light-stat">等待计算</div></div>
+      <div id="lightCash" class="light"><div class="light-title"><span class="light-led"></span><span>现金周转</span></div><div id="lightCashText" class="light-stat">等待计算</div></div>
     </div>
-  </div>
+  </section>
 
   <div class="body">
-    <div class="col inputs">
-      <div class="group">
-        <p class="g-hd">每单经济 · Per-Unit</p>
-        <p class="g-hint">全部按"卖出一件"填,单位保持一致。平台佣金=平台抽成(亚马逊佣金约 15%);支付手续费=收单费(独立站约 3%,平台店通常已含在佣金里,可填 0)。</p>
-        <div class="field"><label for="price">售价 <span class="sub">客户实付</span></label><span class="inp left"><span class="affix" data-cur>$</span><input id="price" inputmode="decimal" value="29.90"></span></div>
-        <div class="field"><label for="cogs">货物成本 <span class="sub">供应商出厂价 / 件</span></label><span class="inp left"><span class="affix" data-cur>$</span><input id="cogs" inputmode="decimal" value="5.50"></span></div>
-        <div class="field"><label for="inbound">头程分摊 <span class="sub">到仓运费+清关 / 件</span></label><span class="inp left"><span class="affix" data-cur>$</span><input id="inbound" inputmode="decimal" value="1.80"></span></div>
-        <div class="field"><label for="fulfill">尾程 / 履约 <span class="sub">发到客户手里 / 件</span></label><span class="inp left"><span class="affix" data-cur>$</span><input id="fulfill" inputmode="decimal" value="4.50"></span></div>
-        <div class="field"><label for="platform">平台佣金</label><span class="inp"><span class="affix">%</span><input id="platform" inputmode="decimal" value="15"></span></div>
-        <div class="field"><label for="payment">支付手续费</label><span class="inp"><span class="affix">%</span><input id="payment" inputmode="decimal" value="0"></span></div>
-        <div class="field"><label for="retrate">退货率</label><span class="inp"><span class="affix">%</span><input id="retrate" inputmode="decimal" value="8"></span></div>
-        <div class="field"><label for="rethandle">每次退货处理成本 <span class="sub">逆向运费+无法复售损耗</span></label><span class="inp left"><span class="affix" data-cur>$</span><input id="rethandle" inputmode="decimal" value="4.00"></span></div>
-        <div class="field"><label for="cac">获客成本 CAC <span class="sub">每出一单的广告/达人花费</span></label><span class="inp left"><span class="affix" data-cur>$</span><input id="cac" inputmode="decimal" value="9.00"></span></div>
-        <div class="field accent"><label for="target">目标净利率 <span class="sub">你想赚到的利润率(可选)</span></label><span class="inp"><span class="affix">%</span><input id="target" inputmode="decimal" value="20"></span></div>
-      </div>
-
-      <div class="group">
-        <p class="g-hd">现金周期 · Cash Cycle</p>
-        <p class="g-hint">这一组决定你的钱被"锁住"多久。多数小卖家给供应商预付定金,账期填 0;若拿到 Net-30 等账期,填实际天数。</p>
-        <div class="field"><label for="lead">生产+头程到仓 <span class="sub">下单到货可卖</span></label><span class="inp"><span class="affix">天</span><input id="lead" inputmode="decimal" value="30"></span></div>
-        <div class="field"><label for="instock">到仓后平均售出 <span class="sub">库存周转天数</span></label><span class="inp"><span class="affix">天</span><input id="instock" inputmode="decimal" value="25"></span></div>
-        <div class="field"><label for="payout">平台放款延迟 <span class="sub">成交到到账</span></label><span class="inp"><span class="affix">天</span><input id="payout" inputmode="decimal" value="14"></span></div>
-        <div class="field"><label for="supcredit">供应商账期 <span class="sub">收货后多久付款</span></label><span class="inp"><span class="affix">天</span><input id="supcredit" inputmode="decimal" value="0"></span></div>
-        <div class="field"><label for="monthly">计划月销量</label><span class="inp"><span class="affix">单</span><input id="monthly" inputmode="decimal" value="500"></span></div>
-        <div class="field"><label for="cash">可投入启动现金 <span class="sub">能压在货+广告上的钱</span></label><span class="inp left"><span class="affix" data-cur>$</span><input id="cash" inputmode="decimal" value="8000"></span></div>
-      </div>
-    </div>
-
-    <div class="col">
-      <div class="read">
-        <div class="read-hd">每单经济读数</div>
-        <div class="ro hero"><span class="k">贡献利润 / 单<span class="tag">含获客成本,真正进兜里的</span></span><span class="v num" id="o_cpu">—</span></div>
-        <div class="ro"><span class="k">贡献利润率<span class="tag">占回款后销售额</span></span><span class="v num sm" id="o_margin">—</span></div>
-        <div class="ro"><span class="k">广告前毛贡献 / 单<span class="tag">= 下面的保本获客成本</span></span><span class="v num sm v-neutral" id="o_cbcac">—</span></div>
-      </div>
-
-      <div class="read">
-        <div class="read-hd">获客与广告 · 文档没让你算的</div>
-        <div class="ro hero"><span class="k">保本获客成本<span class="tag">最多花多少买一个客还不亏</span></span><span class="v num" id="o_becac">—</span></div>
-        <div class="barwrap">
-          <div class="bar"><i id="cacbar"></i></div>
-          <div class="bar-lab"><span>现 CAC <span class="num" id="cacnow">—</span></span><span>保本线 <span class="num" id="caccap">—</span></span></div>
+    <section class="left">
+      <div class="section">
+        <p class="section-head">Market & FX</p>
+        <div class="fx-row">
+          <label for="fx">汇率 <small>1 <span id="codeLabel">MYR</span> = 多少人民币，已按 2026-07-08 接口写死</small></label>
+          <input id="fx" class="input num" inputmode="decimal" value="1.6654">
         </div>
-        <div class="ro"><span class="k">广告前贡献 / 售价<span class="tag">保本 ROAS = 1 ÷ 此比例</span></span><span class="v num sm v-neutral" id="o_preadpct">—</span></div>
-        <div class="ro"><span class="k">保本 ROAS<span class="tag">实际 ROAS 低于此即亏</span></span><span class="v num sm v-neutral" id="o_roas">—</span></div>
-        <div class="ro divider"><span class="k" id="targetNote">目标净利下需要</span></div>
-        <div class="ro"><span class="k">达标 CAC 上限<span class="tag">买一个客最多花</span></span><span class="v num sm" id="o_cacmax">—</span></div>
-        <div class="ro"><span class="k">达标 ROAS<span class="tag">要赚到目标利润需打到</span></span><span class="v num sm" id="o_roastarget">—</span></div>
+        <div id="marketNote" class="notice"></div>
       </div>
 
-      <div class="read">
-        <div class="read-hd">现金读数</div>
-        <div class="ro"><span class="k">现金转换周期<span class="tag">钱被锁住的天数</span></span><span class="v num v-neutral" id="o_ccc">—</span></div>
-        <div class="ro"><span class="k">每件回款前总垫付<span class="tag">单件峰值出血</span></span><span class="v num sm v-neutral" id="o_perunit">—</span></div>
-        <div class="ro hero"><span class="k">撑住该月销量,需垫付<span class="tag">按时间加权的真实占用</span></span><span class="v num" id="o_wc">—</span></div>
-        <div class="barwrap">
-          <div class="bar"><i id="wcbar"></i></div>
-          <div class="bar-lab"><span>需垫付 <span class="num" id="wcneed">—</span></span><span>你的现金 <span class="num" id="wchave">—</span></span></div>
+      <div class="section">
+        <p class="section-head">成交与回款</p>
+        <p class="hint">本组填站点本币。售价、店铺券、买家运费会先算本币成交，再按汇率换成人民币。</p>
+        <div class="fields">
+          <div class="field"><label for="priceLocal">商品售价 <small>标价或折后活动价</small></label><span class="control"><input id="priceLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="priceLocalCny" class="preview">≈ ¥0.00</span></span></div>
+          <div class="field"><label for="sellerVoucherLocal">店铺券/折扣 <small>卖家承担的券补</small></label><span class="control"><input id="sellerVoucherLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="sellerVoucherLocalCny" class="preview">≈ ¥0.00</span></span></div>
+          <div class="field"><label for="fxLossPct">换汇/提现损耗 <small>结汇、收款通道损耗</small></label><span class="control"><input id="fxLossPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="cmp">
-    <p class="g-hd">产品对比 · Compare</p>
-    <div class="cmp-add">
-      <input id="cmpName" type="text" placeholder="给当前这组数字起个名字,如「长毛猫除毛刷」" aria-label="产品名称">
-      <button class="btn primary" id="saveBtn">保存当前</button>
-    </div>
-    <div id="cmpList"></div>
-  </div>
-
-  <div class="ft">
-    <div class="actions">
-      <button class="btn" id="copyBtn">复制结论摘要</button>
-      <button class="btn" id="resetBtn">重置为示例</button>
-      <button class="btn" id="clearBtn">清空重填</button>
-    </div>
-    <details class="logic">
-      <summary>判定逻辑与口径(点开看清楚再信任这些数)</summary>
-      <div class="inner">
-        <b>每单贡献利润(逐件摊销退货):</b><br>
-        <code>(1−退货率)×售价×(1−佣金%−支付%) − (货物+头程+尾程) − 退货率×退货处理成本 − CAC</code><br>
-        口径假设:① 退货时平台佣金/支付费按"退还给你"处理(主流平台如此);② 退回的货物按"无法复售"计,货物成本对每件发出去的货都算一次,不重复扣;③ 若退货能翻新复售,实际比这乐观一点。<br><br>
-        <b>保本获客成本</b> = 广告前毛贡献。它是天花板——<b>买一个客的钱再高也不能超过它</b>,否则每单必亏。<br>
-        <b>广告前贡献 / 售价</b> = 保本获客成本 ÷ 售价。<b>保本 ROAS = 1 ÷ 这个比例</b>(= 售价 ÷ 保本获客成本),口径对应广告后台的毛销售额 ROAS。利润率越薄,这个比例越小,你要打的保本 ROAS 就越高。<br><br>
-        <b>目标净利率</b>:想让贡献利润率达到目标 T,则 <code>达标 CAC 上限 = 广告前毛贡献 − T×(回款后售价)</code>,<code>达标 ROAS = 售价 ÷ 达标 CAC 上限</code>。若上限 ≤ 0,代表即便免费拿客也达不到该利润,显示"不可达"。<br><br>
-        <b>现金转换周期</b> = <code>生产头程 + 库存周转 + 放款延迟 − 供应商账期</code>。<br>
-        <b>需垫付周转现金(两桶时间加权):</b>货物+头程从下单一直锁到回款(整个现金周期);履约+广告是卖出那一刻才花、只锁到放款为止。所以<br>
-        <code>需垫付 = (月销量÷30) × [ (货物+头程)×现金周期 + (履约+CAC)×放款延迟 ]</code>。这比"每单垫付×现金周期"更准,通常更低——因为后两笔钱被锁的时间短得多。<br><br>
-        <b>三盏灯阈值:</b>
-        <ul>
-          <li>① 每单赚钱:贡献利润 &gt; 0 为绿,≤ 0 为红。</li>
-          <li>② 利润够厚:贡献利润率 ≥ 20% 绿,10–20% 黄,&lt; 10% 红。</li>
-          <li>③ 现金撑得住:需垫付 ≤ 现金70% 绿,70–100% 黄,&gt; 现金 红;未填现金则按现金周期长短给参考。</li>
-        </ul>
-        <b>任何一盏红 → 否决</b>;无红但有黄 → 只做小测、不压货;全绿 → 通过本筛,再去过竞争与差异化那张 10 分制表。这只是<b>钱的生死线</b>,过了不代表能做,只代表"值得继续看"。目标净利那两行是"想赚到目标要满足什么",不参与三盏灯的保本判定。
+      <div class="section">
+        <p class="section-head">人民币成本</p>
+        <p class="hint">这些通常在中国侧发生，直接填人民币。头程建议按单件分摊，不要只填整票运费。</p>
+        <div class="fields">
+          <div class="field"><label for="productCostCny">货物成本 <small>供应商出厂价 / 件</small></label><span class="control"><input id="productCostCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+          <div class="field"><label for="warehouseCny">仓储/贴标/操作 <small>入库、拣货、标签、耗材</small></label><span class="control"><input id="warehouseCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+          <div class="field"><label for="headFreightCny">头程运费 <small>中国到本地仓 / 件</small></label><span class="control"><input id="headFreightCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+          <div class="field"><label for="customsCny">关税/清关 <small>进口税费分摊 / 件</small></label><span class="control"><input id="customsCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+          <div class="field"><label for="sampleCny">样品/测评摊销 <small>达人样品、测品损耗</small></label><span class="control"><input id="sampleCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+          <div class="field wide"><label for="otherFixedCny">其他单件成本 <small>ERP、人工、拍摄、质检等按单摊销</small></label><span class="control"><input id="otherFixedCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+        </div>
       </div>
-    </details>
+
+      <div class="section">
+        <p class="section-head">克重与平台物流</p>
+        <div class="fields">
+          <div class="field"><label for="weightGram">商品实重 <small>按克重计算运费</small></label><span class="control"><input id="weightGram" class="input" inputmode="decimal"><span class="affix">g</span><span id="shippingSteps" class="preview">续重 0 段</span></span></div>
+          <div class="field"><label for="shippingZone">物流区域 <small>按截图费率预设，可再改价</small></label><span class="control"><select id="shippingZone" class="select"></select><span id="shippingZoneHint" class="preview">--</span></span></div>
+          <div class="field"><label for="buyerShipLocal">买家承担运费 <small>买家实际支付，包邮填 0</small></label><span class="control"><input id="buyerShipLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="buyerShipLocalCny" class="preview">≈ ¥0.00</span></span></div>
+          <div class="field"><label for="shipBaseWeightGram">起重重量 <small>超过后每 10g 续重</small></label><span class="control"><input id="shipBaseWeightGram" class="input" inputmode="decimal"><span class="affix">g</span></span></div>
+          <div class="field"><label for="shipBasePriceLocal">起重价格 <small>平台扣物流起步价</small></label><span class="control"><input id="shipBasePriceLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="shipBasePriceLocalCny" class="preview">≈ ¥0.00</span></span></div>
+          <div class="field"><label for="shipStepPriceLocal">续重价格 <small>每 10g</small></label><span class="control"><input id="shipStepPriceLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="shipStepPriceLocalCny" class="preview">≈ ¥0.00</span></span></div>
+          <div class="field"><label>卖家承担运费 <small>平台扣费 - 买家承担</small></label><span class="control"><span id="shippingCostResult" class="result-pill">--</span><span id="shippingSplitHint" class="preview">平台扣 --</span></span></div>
+          <div class="field"><label for="returnHandlingLocal">退货处理成本 <small>逆向物流、检查、弃货</small></label><span class="control"><input id="returnHandlingLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="returnHandlingLocalCny" class="preview">≈ ¥0.00</span></span></div>
+          <div class="field"><label for="fixedFeeLocal">固定订单费 <small>每单固定服务费，没有填 0</small></label><span class="control"><input id="fixedFeeLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="fixedFeeLocalCny" class="preview">≈ ¥0.00</span></span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <p class="section-head">平台、达人、获客</p>
+        <p class="hint">各站点和类目会变，默认只是可改预设。正式决策请用卖家中心账单里的实际费率覆盖。</p>
+        <div class="fields">
+          <div class="field"><label for="platformPct">平台佣金 <small>Marketplace / 类目佣金</small></label><span class="control"><input id="platformPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="transactionPct">交易手续费 <small>平台交易/支付处理</small></label><span class="control"><input id="transactionPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="paymentPct">额外收款费 <small>第三方收款或提现</small></label><span class="control"><input id="paymentPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="servicePct">活动/服务费 <small>商城活动、服务费等</small></label><span class="control"><input id="servicePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="taxPct">税费/预扣率 <small>你实际承担才填</small></label><span class="control"><input id="taxPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="affiliateSharePct">达人单占比 <small>多少订单来自联盟/达人</small></label><span class="control"><input id="affiliateSharePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="affiliatePct">达人佣金率 <small>TikTok Affiliate 佣金</small></label><span class="control"><input id="affiliatePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="cacLocal">获客成本 CAC <small>广告费 / 成交单</small></label><span class="control"><input id="cacLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="cacLocalCny" class="preview">≈ ¥0.00</span></span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <p class="section-head">退货、目标与现金</p>
+        <div class="fields">
+          <div class="field"><label for="returnPct">退款/退货率 <small>按已发出订单</small></label><span class="control"><input id="returnPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="returnRecoveryPct">退货货值回收 <small>可二次销售/残值</small></label><span class="control"><input id="returnRecoveryPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="nonRefundFeePct">退货不可退费 <small>平台费未退回比例</small></label><span class="control"><input id="nonRefundFeePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="targetMarginPct">目标净利率 <small>你最低想赚到</small></label><span class="control"><input id="targetMarginPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="monthlyUnits">计划月销量 <small>用于月利润和现金占用</small></label><span class="control"><input id="monthlyUnits" class="input" inputmode="decimal"><span class="affix">单</span></span></div>
+          <div class="field"><label for="cycleDays">备货到售出 <small>生产+头程+库存天数</small></label><span class="control"><input id="cycleDays" class="input" inputmode="decimal"><span class="affix">天</span></span></div>
+          <div class="field"><label for="payoutDays">平台放款延迟 <small>签收到回款</small></label><span class="control"><input id="payoutDays" class="input" inputmode="decimal"><span class="affix">天</span></span></div>
+          <div class="field"><label for="cashCny">可投入现金 <small>能压货和投流的钱</small></label><span class="control"><input id="cashCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="right">
+      <div class="cards">
+        <div class="metric hero">
+          <div class="name">人民币净利润 / 单</div>
+          <div id="oProfit" class="value">--</div>
+          <div id="oProfitSub" class="sub">含平台费、尾程、广告、达人佣金、退货和换汇损耗</div>
+        </div>
+        <div class="metric">
+          <div class="name">净利率</div>
+          <div id="oMargin" class="value">--</div>
+          <div class="sub">净利润 ÷ 到手收入</div>
+        </div>
+        <div class="metric">
+          <div class="name">月利润</div>
+          <div id="oMonthProfit" class="value">--</div>
+          <div id="oMonthSub" class="sub">按计划月销量估算</div>
+        </div>
+        <div class="metric">
+          <div class="name">卖家承担运费</div>
+          <div id="oShippingCost" class="value">--</div>
+          <div id="oShippingSub" class="sub">平台扣费 - 买家承担</div>
+        </div>
+        <div class="metric">
+          <div class="name">保本 CAC</div>
+          <div id="oBreakCac" class="value">--</div>
+          <div class="sub">广告买一单最多花多少</div>
+        </div>
+      </div>
+
+      <div class="read">
+        <div class="read-title">关键成本</div>
+        <div class="row"><span class="k">商品到手收入</span><span id="lineRevenue" class="v">--</span></div>
+        <div class="row"><span class="k">买家承担运费抵扣</span><span id="lineBuyerShipping" class="v">--</span></div>
+        <div class="row"><span class="k">卖家承担运费</span><span id="lineSellerShipping" class="v">--</span></div>
+        <div class="row"><span class="k">货品与中国侧成本</span><span id="lineGoods" class="v">--</span></div>
+        <div class="row"><span class="k">平台、达人、获客</span><span id="linePlatform" class="v">--</span></div>
+        <div class="row"><span class="k">固定订单费与退货</span><span id="lineLogistics" class="v">--</span></div>
+        <div class="bar-wrap">
+          <div class="bar"><i id="cacBar"></i></div>
+          <div class="bar-label"><span id="cacBarLeft">CAC</span><span id="cacBarRight">保本线</span></div>
+        </div>
+      </div>
+
+      <div class="read">
+        <div class="read-title">现金占用</div>
+        <div class="row"><span class="k">现金锁定天数 <small>备货到售出 + 平台放款延迟</small></span><span id="lineLockDays" class="v">--</span></div>
+        <div class="row"><span class="k">撑住该月销量需垫付 <small>按库存和销售后支出分段估算</small></span><span id="lineCashNeed" class="v">--</span></div>
+        <div class="row"><span class="k">现金覆盖率 <small>可投入现金 ÷ 需垫付</small></span><span id="lineCashCover" class="v">--</span></div>
+        <div class="bar-wrap">
+          <div class="bar"><i id="cashBar"></i></div>
+          <div class="bar-label"><span id="cashNeedLabel">需垫付</span><span id="cashHaveLabel">可投入</span></div>
+        </div>
+      </div>
+
+      <div class="read">
+        <div class="read-title">汇率换算</div>
+        <div class="converter">
+          <label for="fxAmountLocal">输入本币金额</label>
+          <span class="control"><input id="fxAmountLocal" class="input" inputmode="decimal" value="100"><span class="affix local-affix">RM</span></span>
+          <strong id="fxAmountCny" class="converter-result">≈ ¥0.00</strong>
+        </div>
+      </div>
+
+      <div class="read">
+        <div class="read-title">方案对比</div>
+        <div style="padding:12px">
+          <div class="tools">
+            <button id="copyBtn" class="btn" type="button">复制摘要</button>
+            <button id="resetBtn" class="btn" type="button">恢复当前站点示例</button>
+            <button id="clearBtn" class="btn danger" type="button">清空可变成本</button>
+          </div>
+          <div class="save-line">
+            <input id="caseName" class="input" type="text" placeholder="方案名，如：MY 除毛刷 7月测品" aria-label="方案名">
+            <button id="saveBtn" class="btn primary" type="button">保存当前</button>
+          </div>
+          <div id="savedList" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+    </section>
   </div>
-</div>
-<div class="toast" id="toast">已复制结论摘要</div>
+</main>
+<div id="toast" class="toast">已复制</div>
 
 <script>
 (function(){
-  var $=function(id){return document.getElementById(id);};
-  var ids=['price','cogs','inbound','fulfill','platform','payment','retrate','rethandle','cac','target',
-           'lead','instock','payout','supcredit','monthly','cash'];
-  var defaults={price:'29.90',cogs:'5.50',inbound:'1.80',fulfill:'4.50',platform:'15',payment:'0',
-                retrate:'8',rethandle:'4.00',cac:'9.00',target:'20',lead:'30',instock:'25',payout:'14',
-                supcredit:'0',monthly:'500',cash:'8000'};
-  var cur='$', verdictState='pass';
-  var KEY='veto_saved_v2';
+  "use strict";
 
-  function n(id){var v=parseFloat($(id).value);return isFinite(v)?v:0;}
-  function money(x){return cur+x.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-  function money0(x){return cur+Math.round(x).toLocaleString('en-US');}
-  function pct(x){return (x*100).toFixed(1)+'%';}
-  function setClass(el,cls){el.className=el.className.replace(/\bv-(pass|warn|fail|neutral)\b/g,'').trim()+' '+cls;}
-  function lightClass(el,state){el.className='light is-'+state;}
-  function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},1600);}
-
-  function compute(){
-    var price=n('price'), cogs=n('cogs'), inbound=n('inbound'), fulfill=n('fulfill');
-    var plat=n('platform')/100, pay=n('payment')/100, r=Math.min(n('retrate')/100,0.95), rh=n('rethandle'), cac=n('cac');
-    var target=n('target')/100;
-    var lead=n('lead'), instock=n('instock'), payout=n('payout'), supcredit=n('supcredit');
-    var monthly=n('monthly'), cash=n('cash');
-
-    var productCost = cogs+inbound+fulfill;
-    var expRev = (1-r)*price;
-    var cbCac = (1-r)*price*(1-plat-pay) - productCost - r*rh;   // 广告前毛贡献 = 保本CAC
-    var cpu   = cbCac - cac;                                      // 贡献利润/单
-    var margin = expRev>0 ? cpu/expRev : 0;
-    var roas  = cbCac>0 ? price/cbCac : 0;
-    var preAdPct = price>0 ? cbCac/price : 0;
-    var cacMax = cbCac - target*expRev;                          // 达标CAC上限
-    var roasTarget = cacMax>0 ? price/cacMax : 0;
-
-    var ccc = lead+instock+payout-supcredit;
-    var perUnitFloat = productCost + cac;
-    var invLock = Math.max(ccc,0);
-    var saleLock = Math.max(payout,0);
-    var dailyUnits = monthly/30;
-    var wc = dailyUnits * ( (cogs+inbound)*invLock + (fulfill+cac)*saleLock );
-
-    // 每单经济
-    $('o_cpu').textContent = money(cpu); setClass($('o_cpu'), cpu>0?'v-pass':'v-fail');
-    $('o_margin').textContent = pct(margin); setClass($('o_margin'), margin>=0.20?'v-pass':(margin>=0.10?'v-warn':'v-fail'));
-    $('o_cbcac').textContent = money(cbCac);
-
-    // 获客与广告
-    $('o_becac').textContent = money(cbCac); setClass($('o_becac'), cbCac>cac?'v-pass':'v-fail');
-    $('o_preadpct').textContent = pct(preAdPct);
-    $('o_roas').textContent = roas>0? roas.toFixed(2)+'×' : '—';
-    $('cacnow').textContent = money(cac);
-    $('caccap').textContent = money(Math.max(cbCac,0));
-    var cacFill = cbCac>0? Math.min(cac/cbCac,1.35)/1.35*100 : 100;
-    $('cacbar').style.width = cacFill+'%';
-    $('cacbar').style.background = (cac<=cbCac && cbCac>0)? 'var(--pass)' : 'var(--fail)';
-
-    $('targetNote').textContent = '目标净利 '+(n('target')||0)+'% 下需要';
-    if(cacMax>0){
-      $('o_cacmax').textContent = money(cacMax);
-      setClass($('o_cacmax'), cac<=cacMax?'v-pass':'v-warn');
-      $('o_roastarget').textContent = roasTarget.toFixed(2)+'×';
-      setClass($('o_roastarget'), cac<=cacMax?'v-pass':'v-warn');
-    } else {
-      $('o_cacmax').textContent = '不可达'; setClass($('o_cacmax'),'v-fail');
-      $('o_roastarget').textContent = '不可达'; setClass($('o_roastarget'),'v-fail');
+  var markets = {
+    MY: {
+      country:"马来西亚", code:"MYR", symbol:"RM", fx:1.6654, unit:1,
+      note:"马来西亚站示例。费率按可编辑占位处理，正式测算请用 Seller Center 账单和类目费率覆盖。",
+      defaults:{priceLocal:59.9,sellerVoucherLocal:5,buyerShipLocal:2.9,fxLossPct:1,weightGram:120,shippingZone:"MY-WM",returnHandlingLocal:6,fixedFeeLocal:0,platformPct:4.5,transactionPct:2.16,paymentPct:0,servicePct:0,taxPct:0,affiliateSharePct:55,affiliatePct:10,cacLocal:8,returnPct:4,returnRecoveryPct:35,nonRefundFeePct:15,targetMarginPct:18,monthlyUnits:300,cycleDays:35,payoutDays:14}
+    },
+    TH: {
+      country:"泰国", code:"THB", symbol:"฿", fx:0.2044, unit:1,
+      note:"泰国站示例。卖家承担运费和达人佣金波动较大，建议每个类目单独保存一版。",
+      defaults:{priceLocal:399,sellerVoucherLocal:30,buyerShipLocal:23,fxLossPct:1,weightGram:120,shippingZone:"TH-A",returnHandlingLocal:35,fixedFeeLocal:0,platformPct:4,transactionPct:3.21,paymentPct:0,servicePct:0,taxPct:0,affiliateSharePct:55,affiliatePct:10,cacLocal:55,returnPct:5,returnRecoveryPct:30,nonRefundFeePct:15,targetMarginPct:18,monthlyUnits:300,cycleDays:38,payoutDays:14}
+    },
+    PH: {
+      country:"菲律宾", code:"PHP", symbol:"₱", fx:0.1107, unit:1,
+      note:"菲律宾站示例。岛屿尾程和退款处理差异明显，尾程和退货成本建议按实际线路填。",
+      defaults:{priceLocal:699,sellerVoucherLocal:50,buyerShipLocal:40,fxLossPct:1,weightGram:120,shippingZone:"PH-MNL",returnHandlingLocal:65,fixedFeeLocal:0,platformPct:4,transactionPct:2.24,paymentPct:0,servicePct:0,taxPct:0,affiliateSharePct:55,affiliatePct:10,cacLocal:85,returnPct:5,returnRecoveryPct:30,nonRefundFeePct:15,targetMarginPct:18,monthlyUnits:300,cycleDays:40,payoutDays:14}
+    },
+    VN: {
+      country:"越南", code:"VND", symbol:"₫", fx:0.000258, unit:100000,
+      note:"越南站示例。VND 金额较大，表格会自动用整数显示；小额差异对人民币利润也可能很敏感。",
+      defaults:{priceLocal:299000,sellerVoucherLocal:20000,buyerShipLocal:15000,fxLossPct:1,weightGram:120,shippingZone:"VN-A",returnHandlingLocal:25000,fixedFeeLocal:0,platformPct:4,transactionPct:3,paymentPct:0,servicePct:0,taxPct:0,affiliateSharePct:60,affiliatePct:10,cacLocal:30000,returnPct:4,returnRecoveryPct:30,nonRefundFeePct:15,targetMarginPct:18,monthlyUnits:300,cycleDays:38,payoutDays:14}
+    },
+    SG: {
+      country:"新加坡", code:"SGD", symbol:"S$", fx:5.2656, unit:1,
+      note:"新加坡站示例。售价高但获客和履约也贵，税费是否由你承担要按公司和开票口径单独确认。",
+      defaults:{priceLocal:24.9,sellerVoucherLocal:2,buyerShipLocal:0,fxLossPct:1,weightGram:120,shippingZone:"SG-ALL",returnHandlingLocal:3.5,fixedFeeLocal:0,platformPct:4,transactionPct:2.18,paymentPct:0,servicePct:0,taxPct:0,affiliateSharePct:45,affiliatePct:8,cacLocal:3.8,returnPct:3,returnRecoveryPct:40,nonRefundFeePct:15,targetMarginPct:18,monthlyUnits:180,cycleDays:32,payoutDays:14}
     }
+  };
 
-    // 现金
-    $('o_ccc').textContent = Math.round(ccc)+' 天';
-    $('o_perunit').textContent = money(perUnitFloat);
-    $('o_wc').textContent = money0(wc);
-    setClass($('o_wc'), (cash>0 && wc>cash)?'v-fail':((cash>0 && wc>cash*0.7)?'v-warn':'v-pass'));
-    $('wcneed').textContent = money0(wc);
-    $('wchave').textContent = cash>0? money0(cash) : '未填';
-    var wcFill = cash>0? Math.min(wc/cash,1.35)/1.35*100 : 100;
-    $('wcbar').style.width = wcFill+'%';
-    $('wcbar').style.background = cash<=0? 'var(--mute-2)' : (wc>cash? 'var(--fail)':(wc>cash*0.7?'var(--warn)':'var(--pass)'));
+  var shippingRates = {
+    TH:[
+      {id:"TH-A", label:"Zone A · Standard", baseWeight:10, basePrice:24, stepPrice:1, buyerShip:23},
+      {id:"TH-B", label:"Zone B · Standard", baseWeight:10, basePrice:37, stepPrice:1, buyerShip:36},
+      {id:"TH-C", label:"Zone C · Standard", baseWeight:10, basePrice:80, stepPrice:1, buyerShip:79}
+    ],
+    VN:[
+      {id:"VN-A", label:"Zone A · Economy", baseWeight:10, basePrice:25900, stepPrice:900, buyerShip:15000},
+      {id:"VN-B", label:"Zone B · Economy", baseWeight:10, basePrice:27900, stepPrice:900, buyerShip:17000},
+      {id:"VN-C", label:"Zone C · Economy", baseWeight:10, basePrice:27900, stepPrice:900, buyerShip:17000},
+      {id:"VN-D", label:"Zone D · Economy", baseWeight:10, basePrice:40900, stepPrice:900, buyerShip:30000}
+    ],
+    MY:[
+      {id:"MY-WM", label:"西马 · Standard", baseWeight:10, basePrice:3.05, stepPrice:.15, buyerShip:2.9},
+      {id:"MY-EM", label:"东马 · Standard", baseWeight:10, basePrice:8.15, stepPrice:.15, buyerShip:8}
+    ],
+    PH:[
+      {id:"PH-MNL", label:"马尼拉 · Standard", baseWeight:10, basePrice:50.5, stepPrice:4.5, buyerShip:40},
+      {id:"PH-OTHER", label:"其他区 · Standard", baseWeight:10, basePrice:70.5, stepPrice:4.5, buyerShip:60}
+    ],
+    SG:[
+      {id:"SG-ALL", label:"全境 · Standard", baseWeight:40, basePrice:.98, stepPrice:.15, buyerShip:0}
+    ]
+  };
 
-    // 三盏灯
-    var s1 = cpu>0?'pass':'fail'; lightClass($('L1'),s1);
-    $('L1s').textContent = cpu>0 ? '每单净赚 '+money(cpu)+',为正'
-      : (cac>cbCac? '获客成本 '+money(cac)+' 已超过保本线 '+money(Math.max(cbCac,0))+',每单亏 '+money(-cpu) : '每单亏 '+money(-cpu));
+  var cnyDefaults = {
+    productCostCny:18,
+    headFreightCny:4.5,
+    customsCny:1,
+    warehouseCny:2.4,
+    sampleCny:0.6,
+    otherFixedCny:0.8,
+    cashCny:30000
+  };
 
-    var s2 = cpu<=0?'fail':(margin>=0.20?'pass':(margin>=0.10?'warn':'fail')); lightClass($('L2'),s2);
-    $('L2s').textContent = cpu<=0? '已亏损,先解决每单成立'
-      : (margin>=0.20? '利润率 '+pct(margin)+',有缓冲空间' : (margin>=0.10? '利润率仅 '+pct(margin)+',退货/广告波动易吃光' : '利润率 '+pct(margin)+',太薄'));
+  var fieldIds = [
+    "fx","priceLocal","sellerVoucherLocal","buyerShipLocal","fxLossPct",
+    "productCostCny","headFreightCny","customsCny","warehouseCny","sampleCny","otherFixedCny",
+    "weightGram","shipBaseWeightGram","shipBasePriceLocal","shipStepPriceLocal","returnHandlingLocal","fixedFeeLocal",
+    "platformPct","transactionPct","paymentPct","servicePct","taxPct","affiliateSharePct","affiliatePct","cacLocal",
+    "returnPct","returnRecoveryPct","nonRefundFeePct","targetMarginPct","monthlyUnits","cycleDays","payoutDays","cashCny"
+  ];
 
-    var s3;
-    if(cash>0){ s3 = wc>cash?'fail':(wc>cash*0.7?'warn':'pass'); } else { s3 = ccc<=45?'pass':(ccc<=90?'warn':'fail'); }
-    lightClass($('L3'),s3);
-    $('L3s').textContent = cash>0
-      ? (wc>cash? '需垫付 '+money0(wc)+',超出你的现金 '+money0(cash) : (wc>cash*0.7? '需垫付 '+money0(wc)+',占用现金 '+pct(wc/cash)+',偏紧' : '需垫付 '+money0(wc)+',现金够用'))
-      : (ccc<=45? '现金周期 '+Math.round(ccc)+' 天,较短' : (ccc<=90? '现金周期 '+Math.round(ccc)+' 天,偏长':'现金周期 '+Math.round(ccc)+' 天,很长 — 务必填启动现金核对'));
+  var KEY = "tts_sea_profit_cases_v1";
+  var lastResult = null;
 
-    // 总判定
-    var states=[s1,s2,s3];
-    var stamp=$('stamp'), stampText=$('stampText'), reason=$('reason'), vbox=$('verdict');
-    var col, txt, why;
-    if(states.indexOf('fail')>=0){
-      verdictState='fail'; col='var(--fail)'; txt='否决';
-      if(s1==='fail') why='<b>每单不赚钱</b>。按当前获客成本,每卖一单亏 <b>'+money(-cpu)+'</b> — 这单生意从根上不成立,人群和切口都救不了它。';
-      else if(s3==='fail') why=(cash>0?'单件能赚,但<b>现金会先断</b>:撑住月销 '+Math.round(monthly)+' 单需垫付 <b>'+money0(wc)+'</b>,超过你的启动现金 <b>'+money0(cash)+'</b>。先降销量目标、缩现金周期,或加预算。':'单件能赚,但<b>现金周期长达 '+Math.round(ccc)+' 天</b>。请填入启动现金核对是否会断。');
-      else why='单件能赚,但<b>利润率只有 '+pct(margin)+'</b>,太薄 — 一次退货潮、广告涨价或汇率波动就能吃光。';
-    } else if(states.indexOf('warn')>=0){
-      verdictState='warn'; col='var(--warn)'; txt='谨慎';
-      why='过线,但有黄灯:'+(s2==='warn'?'利润率仅 <b>'+pct(margin)+'</b>,缓冲薄;':'')+(s3==='warn'?'周转占用现金 '+(cash>0?'<b>'+pct(wc/cash)+'</b>':'偏高')+',吃紧;':'')+'<b>只用小仓小预算实测,不要压货</b>。';
-    } else {
-      verdictState='pass'; col='var(--pass)'; txt='通过本筛';
-      why='钱的生死线过了:每单净赚 <b>'+money(cpu)+'</b>、利润率 <b>'+pct(margin)+'</b>、垫付现金可控。<b>下一关 → 去过竞争与差异化那张 10 分制表</b>,确认你有二次切入点。';
-    }
-    stamp.style.color=col; stampText.textContent=txt; reason.innerHTML=why;
-    vbox.style.boxShadow='inset 0 2px 0 '+col;
+  function $(id){return document.getElementById(id);}
+  function num(id){var v=parseFloat($(id).value);return isFinite(v)?v:0;}
+  function set(id,val){$(id).value=String(val);}
+  function clamp(x,lo,hi){return Math.min(Math.max(x,lo),hi);}
+  function pctVal(id){return clamp(num(id)/100,0,10);}
+  function currentMarket(){return markets[$("market").value] || markets.MY;}
+  function decimalsFor(code){return code==="VND" ? 0 : 2;}
+  function fmtCny(x, digits){
+    var d = digits == null ? 2 : digits;
+    var sign = x < 0 ? "-" : "";
+    return sign + "¥" + Math.abs(x).toLocaleString("zh-CN",{minimumFractionDigits:d,maximumFractionDigits:d});
+  }
+  function fmtCny0(x){return fmtCny(x,0);}
+  function fmtLocal(x, market, digits){
+    var m = market || currentMarket();
+    var d = digits == null ? decimalsFor(m.code) : digits;
+    var sign = x < 0 ? "-" : "";
+    return sign + m.symbol + Math.abs(x).toLocaleString("zh-CN",{minimumFractionDigits:d,maximumFractionDigits:d}) + " " + m.code;
+  }
+  function fmtPct(x){return (x*100).toFixed(1) + "%";}
+  function toneClass(el,tone){el.className = el.className.replace(/\b(good|mid|bad|plain|info)\b/g,"").trim()+" "+tone;}
+  function setLight(id,state,text){
+    $(id).className = "light " + state;
+    $(id+"Text").textContent = text;
+  }
+  function toast(text){
+    var t=$("toast");
+    t.textContent=text;
+    t.classList.add("show");
+    clearTimeout(t._timer);
+    t._timer=setTimeout(function(){t.classList.remove("show");},1500);
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g,function(ch){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
+    });
   }
 
-  function refreshCur(){
-    cur=$('cur').value;
-    document.querySelectorAll('[data-cur]').forEach(function(e){e.textContent=cur;});
+  function setupMarketSelect(){
+    var html = Object.keys(markets).map(function(k){
+      var m=markets[k];
+      return '<option value="'+k+'">'+m.country+" "+m.code+"</option>";
+    }).join("");
+    $("market").innerHTML=html;
+    $("market").value="MY";
+  }
+
+  function applyMarketDefaults(includeCny){
+    var m=currentMarket();
+    set("fx",m.fx);
+    Object.keys(m.defaults).forEach(function(id){set(id,m.defaults[id]);});
+    if(includeCny){
+      Object.keys(cnyDefaults).forEach(function(id){set(id,cnyDefaults[id]);});
+    }
+    refreshMarketChrome();
+    applySelectedShippingRate(true);
     compute();
   }
 
-  // ---- 产品对比 (localStorage,带降级) ----
-  var saved=lsGet();
-  function lsGet(){ try{ return JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ return []; } }
-  function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(saved)); }catch(e){} }
+  function refreshMarketChrome(){
+    var m=currentMarket();
+    $("codeLabel").textContent=m.code;
+    $("marketNote").innerHTML="<strong>"+m.country+" "+m.code+"</strong>｜本币输入会直接在旁边折算人民币。"+m.note;
+    document.querySelectorAll(".local-affix").forEach(function(el){el.textContent=m.symbol;});
+    refreshShippingOptions();
+  }
+
+  function refreshShippingOptions(){
+    var marketKey=$("market").value;
+    var rates=shippingRates[marketKey] || [];
+    var current=$("shippingZone").value;
+    $("shippingZone").innerHTML=rates.map(function(rate){
+      return '<option value="'+rate.id+'">'+rate.label+'</option>';
+    }).join("");
+    var valid=rates.some(function(rate){return rate.id===current;});
+    $("shippingZone").value=valid ? current : (rates[0] ? rates[0].id : "");
+  }
+
+  function selectedShippingRate(){
+    var rates=shippingRates[$("market").value] || [];
+    var id=$("shippingZone").value;
+    return rates.filter(function(rate){return rate.id===id;})[0] || rates[0] || null;
+  }
+
+  function applySelectedShippingRate(updateBuyerShip){
+    var rate=selectedShippingRate();
+    if(!rate) return;
+    set("shipBaseWeightGram",rate.baseWeight);
+    set("shipBasePriceLocal",rate.basePrice);
+    set("shipStepPriceLocal",rate.stepPrice);
+    if(updateBuyerShip) set("buyerShipLocal",rate.buyerShip);
+  }
+
+  function calcShippingLocal(weight, baseWeight, basePrice, stepPrice){
+    if(weight<=0) return {cost:0, steps:0};
+    var steps=Math.ceil(Math.max(weight-baseWeight,0)/10);
+    return {cost:basePrice+steps*stepPrice, steps:steps};
+  }
+
+  function updateFxPreviews(c, r){
+    var m=c.market;
+    [
+      "priceLocal","sellerVoucherLocal","buyerShipLocal","shipBasePriceLocal",
+      "shipStepPriceLocal","returnHandlingLocal","fixedFeeLocal","cacLocal"
+    ].forEach(function(id){
+      var el=$(id+"Cny");
+      if(el) el.textContent="≈ "+fmtCny(num(id)*c.fx);
+    });
+    if($("shippingCostResult")) $("shippingCostResult").textContent=fmtLocal(r.sellerShippingLocal,m)+" ≈ "+fmtCny(r.sellerShippingCny);
+    if($("shippingSplitHint")) $("shippingSplitHint").textContent="买家承担 "+fmtLocal(r.buyerShippingLocal,m)+"，平台扣 "+fmtLocal(r.shippingCostLocal,m);
+    if($("shippingSteps")) $("shippingSteps").textContent="续重 "+r.shippingSteps+" 段";
+    if($("shippingZoneHint")){
+      var rate=selectedShippingRate();
+      $("shippingZoneHint").textContent=rate ? "买家运费参考 "+fmtLocal(rate.buyerShip,m) : "--";
+    }
+    var fxAmount=Math.max(num("fxAmountLocal"),0);
+    if($("fxAmountCny")) $("fxAmountCny").textContent="≈ "+fmtCny(fxAmount*c.fx);
+  }
+
+  function readInputs(priceOverride){
+    var m=currentMarket();
+    var c = {
+      market:m,
+      fx:Math.max(num("fx"),0),
+      priceLocal:priceOverride == null ? Math.max(num("priceLocal"),0) : Math.max(priceOverride,0),
+      sellerVoucherLocal:Math.max(num("sellerVoucherLocal"),0),
+      buyerShipLocal:Math.max(num("buyerShipLocal"),0),
+      fxLoss:pctVal("fxLossPct"),
+      productCostCny:Math.max(num("productCostCny"),0),
+      headFreightCny:Math.max(num("headFreightCny"),0),
+      customsCny:Math.max(num("customsCny"),0),
+      warehouseCny:Math.max(num("warehouseCny"),0),
+      sampleCny:Math.max(num("sampleCny"),0),
+      otherFixedCny:Math.max(num("otherFixedCny"),0),
+      weightGram:Math.max(num("weightGram"),0),
+      shipBaseWeightGram:Math.max(num("shipBaseWeightGram"),0),
+      shipBasePriceLocal:Math.max(num("shipBasePriceLocal"),0),
+      shipStepPriceLocal:Math.max(num("shipStepPriceLocal"),0),
+      returnHandlingLocal:Math.max(num("returnHandlingLocal"),0),
+      fixedFeeLocal:Math.max(num("fixedFeeLocal"),0),
+      platform:pctVal("platformPct"),
+      transaction:pctVal("transactionPct"),
+      payment:pctVal("paymentPct"),
+      service:pctVal("servicePct"),
+      tax:pctVal("taxPct"),
+      affiliateShare:pctVal("affiliateSharePct"),
+      affiliate:pctVal("affiliatePct"),
+      cacLocal:Math.max(num("cacLocal"),0),
+      returnRate:clamp(num("returnPct")/100,0,.95),
+      returnRecovery:clamp(num("returnRecoveryPct")/100,0,1),
+      nonRefundFee:clamp(num("nonRefundFeePct")/100,0,1),
+      targetMargin:clamp(num("targetMarginPct")/100,-.95,5),
+      monthlyUnits:Math.max(num("monthlyUnits"),0),
+      cycleDays:Math.max(num("cycleDays"),0),
+      payoutDays:Math.max(num("payoutDays"),0),
+      cashCny:Math.max(num("cashCny"),0)
+    };
+    return c;
+  }
+
+  function calculate(priceOverride){
+    var c=readInputs(priceOverride);
+    var netItemLocal=Math.max(c.priceLocal-c.sellerVoucherLocal,0);
+    var collectedLocal=netItemLocal+c.buyerShipLocal;
+    var keptRatio=1-c.returnRate;
+    var feeReturnFactor=keptRatio+c.returnRate*c.nonRefundFee;
+    var revenueLocal=netItemLocal*keptRatio;
+    var revenueCny=revenueLocal*c.fx*(1-c.fxLoss);
+
+    var itemFeeBaseLocal=netItemLocal*feeReturnFactor;
+    var orderFeeBaseLocal=collectedLocal*feeReturnFactor;
+    var platformFeeLocal=itemFeeBaseLocal*(c.platform+c.service+c.tax);
+    var transactionFeeLocal=orderFeeBaseLocal*(c.transaction+c.payment);
+    var affiliateFeeLocal=itemFeeBaseLocal*c.affiliateShare*c.affiliate;
+    var marketingLocal=c.cacLocal+affiliateFeeLocal;
+    var shipping=calcShippingLocal(c.weightGram,c.shipBaseWeightGram,c.shipBasePriceLocal,c.shipStepPriceLocal);
+    var shippingCostLocal=shipping.cost;
+    var buyerShippingLocal=c.buyerShipLocal;
+    var effectiveBuyerShippingLocal=buyerShippingLocal;
+    var sellerShippingLocal=shippingCostLocal-effectiveBuyerShippingLocal;
+    var fixedReturnLocal=c.fixedFeeLocal+c.returnRate*c.returnHandlingLocal;
+    var logisticsLocal=sellerShippingLocal+fixedReturnLocal;
+
+    var landedCny=c.productCostCny+c.headFreightCny+c.customsCny+c.warehouseCny;
+    var recoveryCny=landedCny*c.returnRate*c.returnRecovery;
+    var goodsCostCny=landedCny-recoveryCny+c.sampleCny+c.otherFixedCny;
+    var platformCostCny=(platformFeeLocal+transactionFeeLocal)*c.fx;
+    var marketingCostCny=marketingLocal*c.fx;
+    var logisticsCostCny=logisticsLocal*c.fx;
+    var totalCostCny=goodsCostCny+platformCostCny+marketingCostCny+logisticsCostCny;
+    var profitCny=revenueCny-totalCostCny;
+    var margin=revenueCny>0 ? profitCny/revenueCny : 0;
+    var roi=goodsCostCny>0 ? profitCny/goodsCostCny : 0;
+    var profitLocal=c.fx>0 ? profitCny/c.fx : 0;
+
+    var profitNoCacCny=profitCny+c.cacLocal*c.fx;
+    var breakCacLocal=c.fx>0 ? Math.max(profitNoCacCny/c.fx,0) : 0;
+    var targetCacLocal=c.fx>0 ? Math.max((profitNoCacCny-c.targetMargin*revenueCny)/c.fx,0) : 0;
+
+    var lockDays=c.cycleDays+c.payoutDays;
+    var dailyUnits=c.monthlyUnits/30;
+    var saleCashCny=(c.cacLocal+Math.max(sellerShippingLocal,0)+c.fixedFeeLocal)*c.fx+c.sampleCny+c.otherFixedCny;
+    var cashNeedCny=dailyUnits*(landedCny*lockDays+saleCashCny*c.payoutDays);
+    var cashCover=cashNeedCny>0 ? c.cashCny/cashNeedCny : 0;
+
+    return {
+      c:c,
+      netItemLocal:netItemLocal,
+      collectedLocal:collectedLocal,
+      revenueLocal:revenueLocal,
+      revenueCny:revenueCny,
+      itemFeeBaseLocal:itemFeeBaseLocal,
+      orderFeeBaseLocal:orderFeeBaseLocal,
+      platformFeeLocal:platformFeeLocal,
+      transactionFeeLocal:transactionFeeLocal,
+      affiliateFeeLocal:affiliateFeeLocal,
+      marketingLocal:marketingLocal,
+      logisticsLocal:logisticsLocal,
+      shippingCostLocal:shippingCostLocal,
+      shippingCostCny:shippingCostLocal*c.fx,
+      buyerShippingLocal:buyerShippingLocal,
+      buyerShippingCny:buyerShippingLocal*c.fx,
+      effectiveBuyerShippingLocal:effectiveBuyerShippingLocal,
+      sellerShippingLocal:sellerShippingLocal,
+      sellerShippingCny:sellerShippingLocal*c.fx,
+      fixedReturnLocal:fixedReturnLocal,
+      fixedReturnCny:fixedReturnLocal*c.fx,
+      shippingSteps:shipping.steps,
+      landedCny:landedCny,
+      recoveryCny:recoveryCny,
+      goodsCostCny:goodsCostCny,
+      platformCostCny:platformCostCny,
+      marketingCostCny:marketingCostCny,
+      logisticsCostCny:logisticsCostCny,
+      totalCostCny:totalCostCny,
+      profitCny:profitCny,
+      profitLocal:profitLocal,
+      margin:margin,
+      roi:roi,
+      breakCacLocal:breakCacLocal,
+      targetCacLocal:targetCacLocal,
+      lockDays:lockDays,
+      cashNeedCny:cashNeedCny,
+      cashCover:cashCover,
+      monthlyProfitCny:profitCny*c.monthlyUnits
+    };
+  }
+
+  function findPrice(goalFn){
+    var base=readInputs();
+    var lo=0;
+    var shipping=calcShippingLocal(base.weightGram,base.shipBaseWeightGram,base.shipBasePriceLocal,base.shipStepPriceLocal);
+    var hi=Math.max(base.priceLocal*2, base.sellerVoucherLocal+base.cacLocal+shipping.cost+10, 10);
+    var tries=0;
+    while(goalFn(calculate(hi))<0 && tries<80){
+      hi=hi*1.8+10;
+      tries++;
+      if(hi>1e12) return null;
+    }
+    for(var i=0;i<70;i++){
+      var mid=(lo+hi)/2;
+      if(goalFn(calculate(mid))>=0) hi=mid; else lo=mid;
+    }
+    return hi;
+  }
+
+  function compute(){
+    var r=calculate();
+    var c=r.c;
+    lastResult=r;
+    var breakPrice=findPrice(function(x){return x.profitCny;});
+    var targetPrice=findPrice(function(x){return x.profitCny-x.c.targetMargin*x.revenueCny;});
+
+    $("oProfit").textContent=fmtCny(r.profitCny);
+    toneClass($("oProfit"), r.profitCny>0 ? "good" : "bad");
+    $("oProfitSub").textContent="折合本币约 "+fmtLocal(r.profitLocal,c.market)+" / 单，ROI "+fmtPct(r.roi);
+    $("oMargin").textContent=fmtPct(r.margin);
+    toneClass($("oMargin"), r.margin>=c.targetMargin ? "good" : (r.margin>=Math.max(.08,c.targetMargin*.55) ? "mid" : "bad"));
+    $("oMonthProfit").textContent=fmtCny0(r.monthlyProfitCny);
+    toneClass($("oMonthProfit"), r.monthlyProfitCny>0 ? "good" : "bad");
+    $("oMonthSub").textContent="按月销 "+Math.round(c.monthlyUnits).toLocaleString("zh-CN")+" 单";
+    $("oShippingCost").textContent=fmtLocal(r.sellerShippingLocal,c.market);
+    toneClass($("oShippingCost"), r.sellerShippingLocal<=r.shippingCostLocal*.45 ? "good" : "info");
+    $("oShippingSub").textContent="买家承担 "+fmtLocal(r.buyerShippingLocal,c.market)+"，平台扣 "+fmtLocal(r.shippingCostLocal,c.market);
+    $("oBreakCac").textContent=fmtLocal(r.breakCacLocal,c.market);
+    toneClass($("oBreakCac"), c.cacLocal<=r.breakCacLocal ? "good" : "bad");
+
+    $("lineRevenue").textContent=fmtCny(r.revenueCny);
+    $("lineBuyerShipping").textContent="+"+fmtCny(r.effectiveBuyerShippingLocal*c.fx);
+    $("lineSellerShipping").textContent="-"+fmtCny(r.sellerShippingCny);
+    $("lineGoods").textContent="-"+fmtCny(r.goodsCostCny);
+    $("linePlatform").textContent="-"+fmtCny(r.platformCostCny+r.marketingCostCny);
+    $("lineLogistics").textContent="-"+fmtCny(r.fixedReturnCny);
+    $("lineLockDays").textContent=Math.round(r.lockDays)+" 天";
+    $("lineCashNeed").textContent=fmtCny0(r.cashNeedCny);
+    toneClass($("lineCashNeed"), c.cashCny>=r.cashNeedCny ? "good" : (c.cashCny>=r.cashNeedCny*.7 ? "mid" : "bad"));
+    $("lineCashCover").textContent=r.cashNeedCny>0 ? fmtPct(r.cashCover) : "充足";
+    toneClass($("lineCashCover"), c.cashCny>=r.cashNeedCny ? "good" : (c.cashCny>=r.cashNeedCny*.7 ? "mid" : "bad"));
+
+    var cacFill=r.breakCacLocal>0 ? clamp(c.cacLocal/r.breakCacLocal,0,1.25)/1.25*100 : 100;
+    $("cacBar").style.width=cacFill+"%";
+    $("cacBar").style.background=c.cacLocal<=r.targetCacLocal ? "var(--green)" : (c.cacLocal<=r.breakCacLocal ? "var(--amber)" : "var(--red)");
+    $("cacBarLeft").textContent="现 CAC "+fmtLocal(c.cacLocal,c.market);
+    $("cacBarRight").textContent="保本 "+fmtLocal(r.breakCacLocal,c.market);
+
+    var cashFill=c.cashCny>0 ? clamp(r.cashNeedCny/c.cashCny,0,1.25)/1.25*100 : 100;
+    $("cashBar").style.width=cashFill+"%";
+    $("cashBar").style.background=c.cashCny>=r.cashNeedCny ? "var(--green)" : (c.cashCny>=r.cashNeedCny*.7 ? "var(--amber)" : "var(--red)");
+    $("cashNeedLabel").textContent="需垫付 "+fmtCny0(r.cashNeedCny);
+    $("cashHaveLabel").textContent="可投入 "+fmtCny0(c.cashCny);
+
+    updateFxPreviews(c,r);
+    updateVerdict(r,breakPrice,targetPrice);
+  }
+
+  function updateVerdict(r,breakPrice,targetPrice){
+    var c=r.c;
+    var sProfit=r.profitCny>0 ? "pass" : "fail";
+    var sMargin=r.profitCny<=0 ? "fail" : (r.margin>=c.targetMargin ? "pass" : (r.margin>=Math.max(.08,c.targetMargin*.55) ? "warn" : "fail"));
+    var sMarketing=c.cacLocal<=r.targetCacLocal ? "pass" : (c.cacLocal<=r.breakCacLocal ? "warn" : "fail");
+    var sCash=c.cashCny<=0 ? (r.lockDays<=45 ? "pass" : (r.lockDays<=70 ? "warn" : "fail")) : (c.cashCny>=r.cashNeedCny ? "pass" : (c.cashCny>=r.cashNeedCny*.7 ? "warn" : "fail"));
+
+    setLight("lightProfit",sProfit,r.profitCny>0 ? "每单到手 "+fmtCny(r.profitCny) : "每单亏 "+fmtCny(Math.abs(r.profitCny)));
+    setLight("lightMargin",sMargin,"净利率 "+fmtPct(r.margin)+"，目标 "+fmtPct(c.targetMargin));
+    setLight("lightMarketing",sMarketing,c.cacLocal<=r.targetCacLocal ? "CAC 和达人佣金仍有目标利润空间" : (c.cacLocal<=r.breakCacLocal ? "不亏，但达不到目标利润率" : "CAC 已超过保本线"));
+    setLight("lightCash",sCash,c.cashCny>0 ? "需垫付 "+fmtCny0(r.cashNeedCny)+"，现金 "+fmtCny0(c.cashCny) : "未填现金，按锁定 "+Math.round(r.lockDays)+" 天参考");
+
+    var states=[sProfit,sMargin,sMarketing,sCash];
+    var stamp=$("stamp"), text=$("stampText"), reason=$("reason");
+    if(states.indexOf("fail")>=0){
+      stamp.style.color="var(--red)";
+      text.textContent="先别上";
+      if(sProfit==="fail"){
+        reason.innerHTML="当前每单人民币净亏 <b>"+fmtCny(Math.abs(r.profitCny))+"</b>。优先砍 <b>CAC、平台物流费、达人佣金</b>，或把售价至少拉到 <b>"+(breakPrice==null?"保本线以上":fmtLocal(breakPrice,c.market))+"</b>。";
+      }else if(sMarketing==="fail"){
+        reason.innerHTML="单品毛利能看，但 <b>获客成本已经超过保本 CAC</b>。现 CAC 是 <b>"+fmtLocal(c.cacLocal,c.market)+"</b>，保本线只有 <b>"+fmtLocal(r.breakCacLocal,c.market)+"</b>。";
+      }else if(sCash==="fail"){
+        reason.innerHTML="利润为正，但现金会很紧。按月销 <b>"+Math.round(c.monthlyUnits)+"</b> 单，需要垫付 <b>"+fmtCny0(r.cashNeedCny)+"</b>，高于当前现金 <b>"+fmtCny0(c.cashCny)+"</b>。";
+      }else{
+        reason.innerHTML="每单能赚，但净利率只有 <b>"+fmtPct(r.margin)+"</b>，低于目标 <b>"+fmtPct(c.targetMargin)+"</b>。退货、汇率或广告涨一点就容易吃光。";
+      }
+    }else if(states.indexOf("warn")>=0){
+      stamp.style.color="var(--amber)";
+      text.textContent="小测";
+      reason.innerHTML="这组数过了保本线，但还没舒服。建议小批量测 <b>广告 ROAS、达人转化、真实克重运费</b>，把目标售价参考到 <b>"+(targetPrice==null?"不可达":fmtLocal(targetPrice,c.market))+"</b> 后再压货。";
+    }else{
+      stamp.style.color="var(--green)";
+      text.textContent="可做";
+      reason.innerHTML="按当前口径，每单到手 <b>"+fmtCny(r.profitCny)+"</b>，净利率 <b>"+fmtPct(r.margin)+"</b>，月利润约 <b>"+fmtCny0(r.monthlyProfitCny)+"</b>。下一步看竞品密度、素材角度和达人可复制性。";
+    }
+  }
+
+  function saveCases(list){
+    try{localStorage.setItem(KEY,JSON.stringify(list));}catch(e){}
+  }
+  function loadCases(){
+    try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){return [];}
+  }
   function snapshot(name){
-    var inp={}; ids.forEach(function(id){ inp[id]=$(id).value; });
-    return { name:name, cur:cur, vcol:verdictState, verdict:$('stampText').textContent,
-      cpu:$('o_cpu').textContent, margin:$('o_margin').textContent, roas:$('o_roas').textContent,
-      wc:$('o_wc').textContent, inputs:inp };
+    var inputs={};
+    fieldIds.forEach(function(id){inputs[id]=$(id).value;});
+    inputs.shippingZone=$("shippingZone").value;
+    var r=lastResult || calculate();
+    return {
+      name:name,
+      market:$("market").value,
+      stamp:$("stampText").textContent,
+      profit:fmtCny(r.profitCny),
+      margin:fmtPct(r.margin),
+      cac:fmtLocal(r.c.cacLocal,r.c.market),
+      cash:fmtCny0(r.cashNeedCny),
+      inputs:inputs
+    };
   }
-  function renderCmp(){
-    var box=$('cmpList');
-    if(!saved.length){ box.innerHTML='<div class="cmp-empty">还没有保存的产品。填好一组数字、起个名字,点「保存当前」加入对比。</div>'; return; }
-    var rows=saved.map(function(s,i){
-      var c=s.vcol==='pass'?'var(--pass)':(s.vcol==='warn'?'var(--warn)':'var(--fail)');
-      return '<tr><td title="'+escapeHtml(s.name)+'"><span class="cmp-dot" style="background:'+c+'"></span>'+escapeHtml(s.name)+'</td>'+
-        '<td>'+escapeHtml(s.cpu)+'</td><td>'+escapeHtml(s.margin)+'</td><td>'+escapeHtml(s.roas)+'</td><td>'+escapeHtml(s.wc)+'</td>'+
-        '<td style="white-space:nowrap"><button class="cmp-act" data-load="'+i+'">载入</button><button class="cmp-act del" data-del="'+i+'">删</button></td></tr>';
-    }).join('');
-    box.innerHTML='<div class="cmp-tablewrap"><table class="cmp-t"><thead><tr><th>产品</th><th>利润/单</th><th>利润率</th><th>保本ROAS</th><th>需垫付</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-    box.querySelectorAll('[data-load]').forEach(function(b){ b.onclick=function(){ loadSnap(parseInt(b.getAttribute('data-load'),10)); }; });
-    box.querySelectorAll('[data-del]').forEach(function(b){ b.onclick=function(){ saved.splice(parseInt(b.getAttribute('data-del'),10),1); persist(); renderCmp(); }; });
+  function renderSaved(){
+    var list=loadCases();
+    var box=$("savedList");
+    if(!list.length){
+      box.innerHTML='<div class="saved-empty">还没有保存方案。你可以把不同国家、达人佣金或 CAC 版本存下来对比。</div>';
+      return;
+    }
+    var rows=list.map(function(s,i){
+      var m=markets[s.market] || markets.MY;
+      return '<tr><td>'+escapeHtml(s.name)+'<br><span class="mini">'+m.country+" · "+escapeHtml(s.stamp)+'</span></td><td>'+escapeHtml(s.profit)+'</td><td>'+escapeHtml(s.margin)+'</td><td>'+escapeHtml(s.cac)+'</td><td>'+escapeHtml(s.cash)+'</td><td><button class="act" data-load="'+i+'">载入</button> <button class="act" data-del="'+i+'">删</button></td></tr>';
+    }).join("");
+    box.innerHTML='<div class="exchange"><table><thead><tr><th>方案</th><th>利润/单</th><th>净利率</th><th>CAC</th><th>垫付</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    box.querySelectorAll("[data-load]").forEach(function(btn){
+      btn.addEventListener("click",function(){loadCase(parseInt(btn.getAttribute("data-load"),10));});
+    });
+    box.querySelectorAll("[data-del]").forEach(function(btn){
+      btn.addEventListener("click",function(){
+        var arr=loadCases();
+        arr.splice(parseInt(btn.getAttribute("data-del"),10),1);
+        saveCases(arr);
+        renderSaved();
+      });
+    });
   }
-  function loadSnap(i){
-    var s=saved[i]; if(!s) return;
-    if(s.cur){ $('cur').value=s.cur; }
-    ids.forEach(function(id){ if(s.inputs && s.inputs[id]!==undefined) $(id).value=s.inputs[id]; });
-    refreshCur();
-    document.querySelector('.wrap').scrollIntoView({behavior:'smooth',block:'start'});
-    toast('已载入「'+s.name+'」');
+  function loadCase(i){
+    var arr=loadCases();
+    var s=arr[i];
+    if(!s) return;
+    $("market").value=s.market || "MY";
+    refreshMarketChrome();
+    Object.keys(s.inputs||{}).forEach(function(id){if($(id)) $(id).value=s.inputs[id];});
+    if(s.inputs && s.inputs.packCostCny && $("warehouseCny")){
+      set("warehouseCny",Math.max(num("warehouseCny"),0)+Math.max(parseFloat(s.inputs.packCostCny)||0,0));
+    }
+    compute();
+    toast("已载入 "+s.name);
   }
 
-  // ---- 事件 ----
-  ids.forEach(function(id){ $(id).addEventListener('input',compute); });
-  document.querySelectorAll('.inp input').forEach(function(el){ el.addEventListener('focus',function(){ el.select(); }); });
-  $('cur').addEventListener('change',refreshCur);
-
-  $('resetBtn').addEventListener('click',function(){ ids.forEach(function(id){ $(id).value=defaults[id]; }); compute(); });
-  $('clearBtn').addEventListener('click',function(){ ids.forEach(function(id){ $(id).value=''; }); $('price').focus(); compute(); });
-  $('saveBtn').addEventListener('click',function(){
-    var nm=$('cmpName').value.trim() || ('产品 '+(saved.length+1));
-    saved.unshift(snapshot(nm));
-    if(saved.length>12) saved=saved.slice(0,12);
-    $('cmpName').value=''; persist(); renderCmp(); toast('已保存「'+nm+'」到对比');
-  });
-  $('cmpName').addEventListener('keydown',function(e){ if(e.key==='Enter') $('saveBtn').click(); });
-
-  $('copyBtn').addEventListener('click',function(){
+  function copySummary(){
+    var r=lastResult || calculate();
+    var c=r.c;
     var lines=[
-      '【单品生死线筛查 · 结论:'+$('stampText').textContent+'】',
-      '贡献利润/单(含获客): '+$('o_cpu').textContent+'   利润率: '+$('o_margin').textContent,
-      '保本获客成本: '+$('o_becac').textContent+'   现 CAC: '+$('cacnow').textContent,
-      '广告前贡献/售价: '+$('o_preadpct').textContent+'   保本 ROAS: '+$('o_roas').textContent,
-      '目标利润下 → CAC 上限: '+$('o_cacmax').textContent+'   达标 ROAS: '+$('o_roastarget').textContent,
-      '现金周期: '+$('o_ccc').textContent+'   撑住该月销量需垫付: '+$('o_wc').textContent+'   启动现金: '+$('wchave').textContent,
-      '① '+$('L1s').textContent, '② '+$('L2s').textContent, '③ '+$('L3s').textContent
-    ].join('\n');
-    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(lines).then(function(){toast('已复制结论摘要');}).catch(function(){fallbackCopy(lines);toast('已复制结论摘要');}); }
-    else{ fallbackCopy(lines); toast('已复制结论摘要'); }
-  });
+      "【TikTok Shop SEA 利润测算】"+c.market.country+" "+c.market.code+"｜结论: "+$("stampText").textContent,
+      "售价: "+fmtLocal(c.priceLocal,c.market)+" ("+fmtCny(c.priceLocal*c.fx)+")，店铺券: "+fmtLocal(c.sellerVoucherLocal,c.market),
+      "克重: "+Math.round(c.weightGram)+"g，买家承担运费: "+fmtLocal(r.buyerShippingLocal,c.market)+"，卖家承担运费: "+fmtLocal(r.sellerShippingLocal,c.market)+"，平台扣费: "+fmtLocal(r.shippingCostLocal,c.market),
+      "人民币净利润/单: "+fmtCny(r.profitCny)+"，净利率: "+fmtPct(r.margin)+"，月利润: "+fmtCny0(r.monthlyProfitCny),
+      "成本拆分: 货值中国侧 "+fmtCny(r.goodsCostCny)+"｜平台+营销 "+fmtCny(r.platformCostCny+r.marketingCostCny)+"｜固定费/退货 "+fmtCny(r.fixedReturnCny),
+      "CAC: "+fmtLocal(c.cacLocal,c.market)+"，保本 CAC: "+fmtLocal(r.breakCacLocal,c.market)+"，目标 CAC 上限: "+(r.targetCacLocal>0?fmtLocal(r.targetCacLocal,c.market):"不可达"),
+      "现金占用: "+fmtCny0(r.cashNeedCny)+"，可投入现金: "+fmtCny0(c.cashCny)+"，锁定天数: "+Math.round(r.lockDays)+" 天",
+      "口径: 含平台佣金、交易费、达人佣金、获客成本、头程、按克重拆分的买家/卖家运费、退货、换汇损耗。"
+    ].join("\n");
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lines).then(function(){toast("已复制摘要");}).catch(function(){fallbackCopy(lines);});
+    }else{
+      fallbackCopy(lines);
+    }
+  }
   function fallbackCopy(text){
-    var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta);
+    var ta=document.createElement("textarea");
+    ta.value=text;
+    ta.style.position="fixed";
+    ta.style.opacity="0";
+    document.body.appendChild(ta);
+    ta.select();
+    try{document.execCommand("copy");toast("已复制摘要");}catch(e){toast("复制失败，请手动选中");}
+    document.body.removeChild(ta);
   }
 
-  refreshCur();
-  renderCmp();
+  function clearVariableCosts(){
+    ["sellerVoucherLocal","buyerShipLocal","returnHandlingLocal","fixedFeeLocal","cacLocal","sampleCny","otherFixedCny"].forEach(function(id){set(id,0);});
+    compute();
+  }
+
+  function init(){
+    setupMarketSelect();
+    Object.keys(cnyDefaults).forEach(function(id){set(id,cnyDefaults[id]);});
+    applyMarketDefaults(false);
+    Object.keys(cnyDefaults).forEach(function(id){set(id,cnyDefaults[id]);});
+    refreshMarketChrome();
+    compute();
+    renderSaved();
+
+    fieldIds.forEach(function(id){
+      $(id).addEventListener("input",compute);
+      $(id).addEventListener("focus",function(){this.select();});
+    });
+    $("shippingZone").addEventListener("change",function(){applySelectedShippingRate(true);compute();});
+    $("fxAmountLocal").addEventListener("input",function(){compute();});
+    $("fxAmountLocal").addEventListener("focus",function(){this.select();});
+    $("market").addEventListener("change",function(){applyMarketDefaults(false);});
+    $("presetBtn").addEventListener("click",function(){applyMarketDefaults(true);toast("已套用 "+currentMarket().country+" 示例");});
+    $("resetBtn").addEventListener("click",function(){applyMarketDefaults(true);});
+    $("clearBtn").addEventListener("click",clearVariableCosts);
+    $("copyBtn").addEventListener("click",copySummary);
+    $("saveBtn").addEventListener("click",function(){
+      var name=$("caseName").value.trim() || (currentMarket().country+" 方案 "+(loadCases().length+1));
+      var list=loadCases();
+      list.unshift(snapshot(name));
+      if(list.length>16) list=list.slice(0,16);
+      saveCases(list);
+      $("caseName").value="";
+      renderSaved();
+      toast("已保存 "+name);
+    });
+    $("caseName").addEventListener("keydown",function(e){if(e.key==="Enter") $("saveBtn").click();});
+  }
+
+  init();
 })();
 </script>
 </body>
