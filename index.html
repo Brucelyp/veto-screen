@@ -13,6 +13,9 @@
     --panel-3:#0f1715;
     --line:#263631;
     --line-soft:#1c2a26;
+    --fixed-bg:#1b2724;
+    --fixed-line:#3a4a44;
+    --fixed-ink:#b6c4be;
     --ink:#eef5f1;
     --muted:#93a39d;
     --muted-2:#667770;
@@ -69,25 +72,69 @@
   .body{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(420px,.95fr);gap:0}
   .left{border-right:1px solid var(--line);padding:16px}
   .right{padding:16px;background:#101816}
-  .section{margin-bottom:22px}
+  .section{
+    --section-accent:var(--cyan);
+    margin-bottom:18px;
+    padding:16px;
+    border:1px solid var(--line);
+    border-left:4px solid var(--section-accent);
+    border-radius:8px;
+    background:linear-gradient(180deg,rgba(23,35,32,.78),rgba(15,23,21,.72));
+  }
+  .section.market{--section-accent:var(--cyan)}
+  .section.revenue{--section-accent:var(--green)}
+  .section.cost{--section-accent:var(--amber)}
+  .section.fees{--section-accent:var(--blue)}
+  .section.risk{--section-accent:var(--red)}
   .section:last-child{margin-bottom:0}
-  .section-head{display:flex;align-items:center;gap:10px;margin:0 0 10px;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  .section-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
   .section-head:after{content:"";height:1px;background:var(--line-soft);flex:1}
-  .hint{margin:-4px 0 14px;color:var(--muted-2);font-size:12px;line-height:1.55}
-  .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 34px}
-  .field{display:grid;grid-template-columns:minmax(146px,210px) minmax(132px,150px);gap:12px;align-items:center;justify-content:start;min-width:0}
-  .field.wide{grid-column:1/-1;grid-template-columns:minmax(220px,360px) minmax(132px,150px)}
-  label{font-size:13px;line-height:1.25;color:var(--ink);min-width:0}
-  label small{display:block;color:var(--muted-2);font-size:11px;margin-top:2px}
-  .control{position:relative}
-  .control .input{width:100%;height:36px;padding:8px 35px 8px 10px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .hint{margin:0 0 16px;color:var(--muted-2);font-size:12px;line-height:1.55}
+  .subgroup{margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft)}
+  .subgroup:first-of-type{margin-top:0;padding-top:0;border-top:0}
+  .subgroup-title{margin:0 0 12px;color:var(--muted);font-size:12px;font-weight:700;line-height:1.3}
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px 24px}
+  .field{display:grid;grid-template-columns:minmax(0,1fr) minmax(128px,144px);gap:12px;align-items:center;min-width:0;width:100%}
+  .field.wide{grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(156px,180px)}
+  .field.locked label{color:var(--muted)}
+  .field.locked label small{color:var(--muted-2)}
+  label{font-size:13px;line-height:1.28;color:var(--ink);min-width:0}
+  label small{display:block;color:var(--muted-2);font-size:11px;margin-top:3px}
+  .control{position:relative;min-width:0}
+  .control .input{width:100%;height:38px;padding:8px 35px 8px 10px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
   .control .input:focus,.select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(87,211,196,.18)}
-  .affix{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--muted);pointer-events:none}
+  .control .input[readonly],.fixed-input{
+    background:var(--fixed-bg);
+    border-color:var(--fixed-line);
+    color:var(--fixed-ink);
+    cursor:default;
+  }
+  .control .input[readonly]:focus,.fixed-input:focus{
+    border-color:var(--fixed-line);
+    box-shadow:none;
+  }
+  .affix{position:absolute;right:9px;top:0;height:38px;display:flex;align-items:center;line-height:1;font-family:var(--mono);font-size:12px;color:var(--muted);pointer-events:none}
+  .control .input[readonly] ~ .affix{color:var(--muted-2)}
   .preview{display:block;margin-top:4px;text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted-2);min-height:14px}
-  .control .select{width:100%;height:36px;padding:0 10px}
-  .result-pill{display:flex;align-items:center;justify-content:flex-end;min-height:36px;padding:8px 10px;border:1px solid var(--line-soft);border-radius:7px;background:#0b1412;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--green);text-align:right}
-  .fx-row{display:grid;grid-template-columns:minmax(220px,360px) minmax(132px,150px);gap:12px;align-items:center;justify-content:start;margin-bottom:9px}
-  .fx-row .input{width:100%;height:36px;padding:8px 10px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .field.locked .preview{color:#7d8d86}
+  .control .select{width:100%;height:38px;padding:0 10px}
+  .result-pill{display:flex;align-items:center;justify-content:flex-end;min-height:38px;padding:8px 10px;border:1px solid var(--line-soft);border-radius:7px;background:#0b1412;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--green);text-align:right;line-height:1.25}
+  .result-pill.fixed-result{background:var(--fixed-bg);border-color:var(--fixed-line);color:var(--fixed-ink)}
+  .fx-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(128px,144px);gap:12px;align-items:center;margin-bottom:9px;min-width:0;width:100%}
+  .fx-row .input{width:100%;height:38px;padding:8px 10px;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .fx-tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px 24px;align-items:start;margin-bottom:14px}
+  .fx-tools .fx-row{margin-bottom:0}
+  .fx-tools .converter{
+    padding:0;
+    grid-template-columns:minmax(0,1fr) minmax(128px,144px);
+    grid-template-areas:
+      "label control"
+      ". result";
+    gap:4px 12px;
+  }
+  .fx-tools .converter label{grid-area:label;align-self:center;color:var(--ink);font-size:13px}
+  .fx-tools .converter .control{grid-area:control}
+  .fx-tools .converter-result{grid-area:result;line-height:1.25}
   .notice{border:1px solid var(--line-soft);background:#0b1412;border-radius:8px;padding:10px 12px;color:var(--muted);font-size:12px;line-height:1.55}
   .notice strong{color:var(--ink)}
   .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
@@ -100,6 +147,7 @@
   .good{color:var(--green)}.mid{color:var(--amber)}.bad{color:var(--red)}.plain{color:var(--ink)}.info{color:var(--blue)}
   .read{border:1px solid var(--line);border-radius:8px;background:var(--panel);overflow:hidden;margin-bottom:14px}
   .read-title{padding:10px 12px;border-bottom:1px solid var(--line-soft);background:var(--panel-3);font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+  .read-note{padding:10px 12px;color:var(--muted-2);font-size:11px;line-height:1.55;border-bottom:1px solid var(--line-soft);background:rgba(15,23,21,.35)}
   .row{display:flex;justify-content:space-between;gap:14px;align-items:baseline;border-bottom:1px solid var(--line-soft);padding:10px 12px}
   .row:last-child{border-bottom:0}
   .row .k{font-size:12px;color:var(--muted);line-height:1.35}
@@ -144,6 +192,14 @@
     .fields{grid-template-columns:1fr}
     .field,.field.wide{grid-column:auto;grid-template-columns:minmax(0,1fr) 128px}
     .fx-row{grid-template-columns:minmax(0,1fr) 128px}
+    .fx-tools{grid-template-columns:1fr}
+    .fx-tools .converter{
+      grid-template-columns:minmax(0,1fr) 128px;
+      grid-template-areas:
+        "label control"
+        ". result";
+    }
+    .fx-tools .converter-result{text-align:right}
     .cards{grid-template-columns:1fr}
     .metric.hero .value{font-size:28px}
     .lights{grid-template-columns:1fr}
@@ -153,6 +209,14 @@
   }
   @media (max-width:430px){
     .field,.field.wide,.fx-row{grid-template-columns:1fr}
+    .fx-tools .converter{
+      grid-template-columns:1fr;
+      grid-template-areas:
+        "label"
+        "control"
+        "result";
+    }
+    .fx-tools .converter-result{text-align:left}
   }
   @media (prefers-reduced-motion:reduce){
     *{transition:none!important;scroll-behavior:auto!important}
@@ -188,79 +252,90 @@
 
   <div class="body">
     <section class="left">
-      <div class="section">
-        <p class="section-head">Market & FX</p>
-        <div class="fx-row">
-          <label for="fx">汇率 <small>1 <span id="codeLabel">MYR</span> = 多少人民币，已按 2026-07-08 接口写死</small></label>
-          <input id="fx" class="input num" inputmode="decimal" value="1.6654">
+      <div class="section market">
+        <p class="section-head">市场、汇率与换算</p>
+        <p class="hint">浅色字段为站点固定值或自动计算值；深色输入用于手动填写测算。</p>
+        <div class="fx-tools">
+          <div class="fx-row field locked">
+            <label for="fx">汇率 <small>1 <span id="codeLabel">MYR</span> = 多少人民币，随站点固定带出</small></label>
+            <input id="fx" class="input num fixed-input" inputmode="decimal" value="1.6654" readonly aria-readonly="true">
+          </div>
+          <div class="converter">
+            <label for="fxAmountLocal">本币换人民币</label>
+            <span class="control"><input id="fxAmountLocal" class="input" inputmode="decimal" value="100"><span class="affix local-affix">RM</span></span>
+            <strong id="fxAmountCny" class="converter-result">≈ ¥0.00</strong>
+          </div>
         </div>
         <div id="marketNote" class="notice"></div>
       </div>
 
-      <div class="section">
-        <p class="section-head">成交与回款</p>
-        <p class="hint">本组填站点本币。售价、店铺券、买家运费会先算本币成交，再按汇率换成人民币。</p>
+      <div class="section revenue">
+        <p class="section-head">成交收入</p>
+        <p class="hint">本组填站点本币。成交收入先扣店铺券，再叠合买家承担运费和换汇损耗。</p>
         <div class="fields">
           <div class="field"><label for="priceLocal">商品售价 <small>标价或折后活动价</small></label><span class="control"><input id="priceLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="priceLocalCny" class="preview">≈ ¥0.00</span></span></div>
           <div class="field"><label for="sellerVoucherLocal">店铺券/折扣 <small>卖家承担的券补</small></label><span class="control"><input id="sellerVoucherLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="sellerVoucherLocalCny" class="preview">≈ ¥0.00</span></span></div>
+          <div class="field"><label for="buyerShipLocal">买家承担运费 <small>买家实际支付，包邮填 0</small></label><span class="control"><input id="buyerShipLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="buyerShipLocalCny" class="preview">≈ ¥0.00</span></span></div>
           <div class="field"><label for="fxLossPct">换汇/提现损耗 <small>结汇、收款通道损耗</small></label><span class="control"><input id="fxLossPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
         </div>
       </div>
 
-      <div class="section">
-        <p class="section-head">人民币成本</p>
-        <p class="hint">这些通常在中国侧发生，直接填人民币。头程建议按单件分摊，不要只填整票运费。</p>
-        <div class="fields">
-          <div class="field"><label for="productCostCny">货物成本 <small>供应商出厂价 / 件</small></label><span class="control"><input id="productCostCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
-          <div class="field"><label for="warehouseCny">仓储/贴标/操作 <small>入库、拣货、标签、耗材</small></label><span class="control"><input id="warehouseCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
-          <div class="field"><label for="headFreightCny">头程运费 <small>中国到本地仓 / 件</small></label><span class="control"><input id="headFreightCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
-          <div class="field"><label for="customsCny">关税/清关 <small>进口税费分摊 / 件</small></label><span class="control"><input id="customsCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
-          <div class="field"><label for="sampleCny">样品/测评摊销 <small>达人样品、测品损耗</small></label><span class="control"><input id="sampleCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
-          <div class="field wide"><label for="otherFixedCny">其他单件成本 <small>ERP、人工、拍摄、质检等按单摊销</small></label><span class="control"><input id="otherFixedCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+      <div class="section cost">
+        <p class="section-head">商品成本与平台物流</p>
+        <p class="hint">中国侧成本直接填人民币；平台尾程按克重和区域费率自动算卖家承担部分。</p>
+        <div class="subgroup">
+          <p class="subgroup-title">人民币成本</p>
+          <div class="fields">
+            <div class="field"><label for="productCostCny">货物成本 <small>供应商出厂价 / 件</small></label><span class="control"><input id="productCostCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+            <div class="field"><label for="warehouseCny">仓储/贴标/操作 <small>入库、拣货、标签、耗材</small></label><span class="control"><input id="warehouseCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+            <div class="field"><label for="headFreightCny">头程运费 <small>中国到本地仓 / 件</small></label><span class="control"><input id="headFreightCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+            <div class="field"><label for="customsCny">关税/清关 <small>进口税费分摊 / 件</small></label><span class="control"><input id="customsCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+            <div class="field"><label for="sampleCny">样品/测评摊销 <small>达人样品、测品损耗</small></label><span class="control"><input id="sampleCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+            <div class="field wide"><label for="otherFixedCny">其他单件成本 <small>ERP、人工、拍摄、质检等按单摊销</small></label><span class="control"><input id="otherFixedCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+          </div>
+        </div>
+        <div class="subgroup">
+          <p class="subgroup-title">克重与尾程</p>
+          <div class="fields">
+            <div class="field"><label for="weightGram">商品实重 <small>按克重计算运费</small></label><span class="control"><input id="weightGram" class="input" inputmode="decimal"><span class="affix">g</span><span id="shippingSteps" class="preview">续重 0 段</span></span></div>
+            <div class="field"><label for="shippingZone">物流区域 <small>按站点费率自动带出</small></label><span class="control"><select id="shippingZone" class="select"></select><span id="shippingZoneHint" class="preview">--</span></span></div>
+            <div class="field locked"><label for="shipBaseWeightGram">起重重量 <small>由物流区域固定带出</small></label><span class="control"><input id="shipBaseWeightGram" class="input fixed-input" inputmode="decimal" readonly aria-readonly="true"><span class="affix">g</span></span></div>
+            <div class="field locked"><label for="shipBasePriceLocal">起重价格 <small>由物流区域固定带出</small></label><span class="control"><input id="shipBasePriceLocal" class="input fixed-input" inputmode="decimal" readonly aria-readonly="true"><span class="affix local-affix">RM</span><span id="shipBasePriceLocalCny" class="preview">≈ ¥0.00</span></span></div>
+            <div class="field locked"><label for="shipStepPriceLocal">续重价格 <small>由物流区域固定带出</small></label><span class="control"><input id="shipStepPriceLocal" class="input fixed-input" inputmode="decimal" readonly aria-readonly="true"><span class="affix local-affix">RM</span><span id="shipStepPriceLocalCny" class="preview">≈ ¥0.00</span></span></div>
+            <div class="field locked"><label>卖家承担运费 <small>平台扣费 - 买家承担</small></label><span class="control"><span id="shippingCostResult" class="result-pill fixed-result">--</span><span id="shippingSplitHint" class="preview">平台扣 --</span></span></div>
+          </div>
         </div>
       </div>
 
-      <div class="section">
-        <p class="section-head">克重与平台物流</p>
-        <div class="fields">
-          <div class="field"><label for="weightGram">商品实重 <small>按克重计算运费</small></label><span class="control"><input id="weightGram" class="input" inputmode="decimal"><span class="affix">g</span><span id="shippingSteps" class="preview">续重 0 段</span></span></div>
-          <div class="field"><label for="shippingZone">物流区域 <small>按截图费率预设，可再改价</small></label><span class="control"><select id="shippingZone" class="select"></select><span id="shippingZoneHint" class="preview">--</span></span></div>
-          <div class="field"><label for="buyerShipLocal">买家承担运费 <small>买家实际支付，包邮填 0</small></label><span class="control"><input id="buyerShipLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="buyerShipLocalCny" class="preview">≈ ¥0.00</span></span></div>
-          <div class="field"><label for="shipBaseWeightGram">起重重量 <small>超过后每 10g 续重</small></label><span class="control"><input id="shipBaseWeightGram" class="input" inputmode="decimal"><span class="affix">g</span></span></div>
-          <div class="field"><label for="shipBasePriceLocal">起重价格 <small>平台扣物流起步价</small></label><span class="control"><input id="shipBasePriceLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="shipBasePriceLocalCny" class="preview">≈ ¥0.00</span></span></div>
-          <div class="field"><label for="shipStepPriceLocal">续重价格 <small>每 10g</small></label><span class="control"><input id="shipStepPriceLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="shipStepPriceLocalCny" class="preview">≈ ¥0.00</span></span></div>
-          <div class="field"><label>卖家承担运费 <small>平台扣费 - 买家承担</small></label><span class="control"><span id="shippingCostResult" class="result-pill">--</span><span id="shippingSplitHint" class="preview">平台扣 --</span></span></div>
-          <div class="field"><label for="returnHandlingLocal">退货处理成本 <small>逆向物流、检查、弃货</small></label><span class="control"><input id="returnHandlingLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="returnHandlingLocalCny" class="preview">≈ ¥0.00</span></span></div>
-          <div class="field"><label for="fixedFeeLocal">固定订单费 <small>每单固定服务费，没有填 0</small></label><span class="control"><input id="fixedFeeLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="fixedFeeLocalCny" class="preview">≈ ¥0.00</span></span></div>
-        </div>
-      </div>
-
-      <div class="section">
-        <p class="section-head">平台、达人、获客</p>
-        <p class="hint">各站点和类目会变，默认只是可改预设。正式决策请用卖家中心账单里的实际费率覆盖。</p>
+      <div class="section fees">
+        <p class="section-head">平台费用与获客</p>
+        <p class="hint">佣金、交易费、固定订单费、达人和广告放在一起看，方便判断流量成本是否吃掉利润。</p>
         <div class="fields">
           <div class="field"><label for="platformPct">平台佣金 <small>Marketplace / 类目佣金</small></label><span class="control"><input id="platformPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="transactionPct">交易手续费 <small>平台交易/支付处理</small></label><span class="control"><input id="transactionPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="paymentPct">额外收款费 <small>第三方收款或提现</small></label><span class="control"><input id="paymentPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="servicePct">活动/服务费 <small>商城活动、服务费等</small></label><span class="control"><input id="servicePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="taxPct">税费/预扣率 <small>你实际承担才填</small></label><span class="control"><input id="taxPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="fixedFeeLocal">固定订单费 <small>每单固定服务费，没有填 0</small></label><span class="control"><input id="fixedFeeLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="fixedFeeLocalCny" class="preview">≈ ¥0.00</span></span></div>
           <div class="field"><label for="affiliateSharePct">达人单占比 <small>多少订单来自联盟/达人</small></label><span class="control"><input id="affiliateSharePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="affiliatePct">达人佣金率 <small>TikTok Affiliate 佣金</small></label><span class="control"><input id="affiliatePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
-          <div class="field"><label for="cacLocal">获客成本 CAC <small>广告费 / 成交单</small></label><span class="control"><input id="cacLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="cacLocalCny" class="preview">≈ ¥0.00</span></span></div>
+          <div class="field wide"><label for="cacLocal">获客成本 CAC <small>广告费 / 成交单</small></label><span class="control"><input id="cacLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="cacLocalCny" class="preview">≈ ¥0.00</span></span></div>
         </div>
       </div>
 
-      <div class="section">
-        <p class="section-head">退货、目标与现金</p>
+      <div class="section risk">
+        <p class="section-head">售后、目标与现金</p>
+        <p class="hint">退款风险、利润目标和现金周转放在最后，用来判断这个单品能不能扩大。</p>
         <div class="fields">
           <div class="field"><label for="returnPct">退款/退货率 <small>按已发出订单</small></label><span class="control"><input id="returnPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="returnHandlingLocal">退货处理成本 <small>逆向物流、检查、弃货</small></label><span class="control"><input id="returnHandlingLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="returnHandlingLocalCny" class="preview">≈ ¥0.00</span></span></div>
           <div class="field"><label for="returnRecoveryPct">退货货值回收 <small>可二次销售/残值</small></label><span class="control"><input id="returnRecoveryPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="nonRefundFeePct">退货不可退费 <small>平台费未退回比例</small></label><span class="control"><input id="nonRefundFeePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="targetMarginPct">目标净利率 <small>你最低想赚到</small></label><span class="control"><input id="targetMarginPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="monthlyUnits">计划月销量 <small>用于月利润和现金占用</small></label><span class="control"><input id="monthlyUnits" class="input" inputmode="decimal"><span class="affix">单</span></span></div>
           <div class="field"><label for="cycleDays">备货到售出 <small>生产+头程+库存天数</small></label><span class="control"><input id="cycleDays" class="input" inputmode="decimal"><span class="affix">天</span></span></div>
           <div class="field"><label for="payoutDays">平台放款延迟 <small>签收到回款</small></label><span class="control"><input id="payoutDays" class="input" inputmode="decimal"><span class="affix">天</span></span></div>
-          <div class="field"><label for="cashCny">可投入现金 <small>能压货和投流的钱</small></label><span class="control"><input id="cashCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
+          <div class="field wide"><label for="cashCny">可投入现金 <small>能压货和投流的钱</small></label><span class="control"><input id="cashCny" class="input" inputmode="decimal"><span class="affix">¥</span></span></div>
         </div>
       </div>
     </section>
@@ -270,38 +345,57 @@
         <div class="metric hero">
           <div class="name">人民币净利润 / 单</div>
           <div id="oProfit" class="value">--</div>
-          <div id="oProfitSub" class="sub">含平台费、尾程、广告、达人佣金、退货和换汇损耗</div>
+          <div id="oProfitSub" class="sub">人民币口径，所有本币收入和费用已按汇率折算</div>
         </div>
         <div class="metric">
-          <div class="name">净利率</div>
+          <div class="name">人民币到手收入 / 单</div>
+          <div id="oRevenueCny" class="value">--</div>
+          <div class="sub">商品收入扣退货和换汇损耗</div>
+        </div>
+        <div class="metric">
+          <div class="name">人民币总成本 / 单</div>
+          <div id="oTotalCostCny" class="value">--</div>
+          <div class="sub">货品、平台、物流、达人、广告</div>
+        </div>
+        <div class="metric">
+          <div class="name">人民币净利率</div>
           <div id="oMargin" class="value">--</div>
-          <div class="sub">净利润 ÷ 到手收入</div>
+          <div class="sub">人民币净利润 ÷ 人民币到手收入</div>
         </div>
         <div class="metric">
-          <div class="name">月利润</div>
+          <div class="name">人民币月利润</div>
           <div id="oMonthProfit" class="value">--</div>
           <div id="oMonthSub" class="sub">按计划月销量估算</div>
         </div>
         <div class="metric">
-          <div class="name">卖家承担运费</div>
-          <div id="oShippingCost" class="value">--</div>
-          <div id="oShippingSub" class="sub">平台扣费 - 买家承担</div>
-        </div>
-        <div class="metric">
-          <div class="name">保本 CAC</div>
+          <div class="name">保本 CAC（本币）</div>
           <div id="oBreakCac" class="value">--</div>
-          <div class="sub">广告买一单最多花多少</div>
+          <div class="sub">广告投放按站点币种参考</div>
         </div>
       </div>
 
       <div class="read">
-        <div class="read-title">关键成本</div>
-        <div class="row"><span class="k">商品到手收入</span><span id="lineRevenue" class="v">--</span></div>
-        <div class="row"><span class="k">买家承担运费抵扣</span><span id="lineBuyerShipping" class="v">--</span></div>
-        <div class="row"><span class="k">卖家承担运费</span><span id="lineSellerShipping" class="v">--</span></div>
-        <div class="row"><span class="k">货品与中国侧成本</span><span id="lineGoods" class="v">--</span></div>
-        <div class="row"><span class="k">平台、达人、获客</span><span id="linePlatform" class="v">--</span></div>
-        <div class="row"><span class="k">固定订单费与退货</span><span id="lineLogistics" class="v">--</span></div>
+        <div class="read-title">人民币拆账 / 单</div>
+        <div class="read-note">本区全部为人民币 ¥。本币输入会先按站点汇率折算，再进入这张利润表。</div>
+        <div class="row"><span class="k">商品到手收入 <small>商品售价 - 店铺券，扣退货和换汇损耗</small></span><span id="lineRevenue" class="v">--</span></div>
+        <div class="row"><span class="k">平台尾程扣费 <small>平台按克重和区域扣除</small></span><span id="lineShippingGross" class="v">--</span></div>
+        <div class="row"><span class="k">买家运费抵扣 <small>买家支付的运费抵扣尾程</small></span><span id="lineBuyerShipping" class="v">--</span></div>
+        <div class="row"><span class="k">货品与中国侧成本 <small>货款、头程、仓储、关税、摊销</small></span><span id="lineGoods" class="v">--</span></div>
+        <div class="row"><span class="k">平台交易费用 <small>佣金、交易费、收款费、活动费、税费</small></span><span id="linePlatform" class="v">--</span></div>
+        <div class="row"><span class="k">达人和获客 <small>达人佣金 + CAC</small></span><span id="lineMarketing" class="v">--</span></div>
+        <div class="row"><span class="k">固定订单费与退货 <small>固定服务费、退货处理费</small></span><span id="lineLogistics" class="v">--</span></div>
+      </div>
+
+      <div class="read">
+        <div class="read-title">本币参考 / 单</div>
+        <div class="read-note">本区全部为站点本币，只用于核对平台账单、物流扣费和广告上限。</div>
+        <div class="row"><span class="k">当前站点币种</span><span id="lineLocalCurrency" class="v">--</span></div>
+        <div class="row"><span class="k">券后商品收入 <small>商品售价 - 店铺券</small></span><span id="lineLocalNetItem" class="v">--</span></div>
+        <div class="row"><span class="k">平台尾程扣费</span><span id="lineLocalGrossShipping" class="v">--</span></div>
+        <div class="row"><span class="k">买家承担运费</span><span id="lineLocalBuyerShipping" class="v">--</span></div>
+        <div class="row"><span class="k">卖家承担运费 <small>平台尾程扣费 - 买家承担运费</small></span><span id="lineLocalSellerShipping" class="v">--</span></div>
+        <div class="row"><span class="k">现 CAC</span><span id="lineLocalCac" class="v">--</span></div>
+        <div class="row"><span class="k">保本 CAC</span><span id="lineLocalBreakCac" class="v">--</span></div>
         <div class="bar-wrap">
           <div class="bar"><i id="cacBar"></i></div>
           <div class="bar-label"><span id="cacBarLeft">CAC</span><span id="cacBarRight">保本线</span></div>
@@ -309,22 +403,14 @@
       </div>
 
       <div class="read">
-        <div class="read-title">现金占用</div>
+        <div class="read-title">现金占用（人民币）</div>
+        <div class="read-note">现金测算统一使用人民币 ¥，用于看备货、放款延迟和投流资金压力。</div>
         <div class="row"><span class="k">现金锁定天数 <small>备货到售出 + 平台放款延迟</small></span><span id="lineLockDays" class="v">--</span></div>
         <div class="row"><span class="k">撑住该月销量需垫付 <small>按库存和销售后支出分段估算</small></span><span id="lineCashNeed" class="v">--</span></div>
         <div class="row"><span class="k">现金覆盖率 <small>可投入现金 ÷ 需垫付</small></span><span id="lineCashCover" class="v">--</span></div>
         <div class="bar-wrap">
           <div class="bar"><i id="cashBar"></i></div>
           <div class="bar-label"><span id="cashNeedLabel">需垫付</span><span id="cashHaveLabel">可投入</span></div>
-        </div>
-      </div>
-
-      <div class="read">
-        <div class="read-title">汇率换算</div>
-        <div class="converter">
-          <label for="fxAmountLocal">输入本币金额</label>
-          <span class="control"><input id="fxAmountLocal" class="input" inputmode="decimal" value="100"><span class="affix local-affix">RM</span></span>
-          <strong id="fxAmountCny" class="converter-result">≈ ¥0.00</strong>
         </div>
       </div>
 
@@ -356,7 +442,7 @@
   var markets = {
     MY: {
       country:"马来西亚", code:"MYR", symbol:"RM", fx:1.6654, unit:1,
-      note:"马来西亚站示例。费率按可编辑占位处理，正式测算请用 Seller Center 账单和类目费率覆盖。",
+      note:"马来西亚站示例。物流费率按站点预设带出，正式测算请用 Seller Center 账单和类目费率核对。",
       defaults:{priceLocal:59.9,sellerVoucherLocal:5,buyerShipLocal:2.9,fxLossPct:1,weightGram:120,shippingZone:"MY-WM",returnHandlingLocal:6,fixedFeeLocal:0,platformPct:4.5,transactionPct:2.16,paymentPct:0,servicePct:0,taxPct:0,affiliateSharePct:55,affiliatePct:10,cacLocal:8,returnPct:4,returnRecoveryPct:35,nonRefundFeePct:15,targetMarginPct:18,monthlyUnits:300,cycleDays:35,payoutDays:14}
     },
     TH: {
@@ -702,24 +788,33 @@
 
     $("oProfit").textContent=fmtCny(r.profitCny);
     toneClass($("oProfit"), r.profitCny>0 ? "good" : "bad");
-    $("oProfitSub").textContent="折合本币约 "+fmtLocal(r.profitLocal,c.market)+" / 单，ROI "+fmtPct(r.roi);
+    $("oProfitSub").textContent="本币参考 "+fmtLocal(r.profitLocal,c.market)+" / 单，ROI "+fmtPct(r.roi);
+    $("oRevenueCny").textContent=fmtCny(r.revenueCny);
+    toneClass($("oRevenueCny"), "plain");
+    $("oTotalCostCny").textContent=fmtCny(r.totalCostCny);
+    toneClass($("oTotalCostCny"), "plain");
     $("oMargin").textContent=fmtPct(r.margin);
     toneClass($("oMargin"), r.margin>=c.targetMargin ? "good" : (r.margin>=Math.max(.08,c.targetMargin*.55) ? "mid" : "bad"));
     $("oMonthProfit").textContent=fmtCny0(r.monthlyProfitCny);
     toneClass($("oMonthProfit"), r.monthlyProfitCny>0 ? "good" : "bad");
     $("oMonthSub").textContent="按月销 "+Math.round(c.monthlyUnits).toLocaleString("zh-CN")+" 单";
-    $("oShippingCost").textContent=fmtLocal(r.sellerShippingLocal,c.market);
-    toneClass($("oShippingCost"), r.sellerShippingLocal<=r.shippingCostLocal*.45 ? "good" : "info");
-    $("oShippingSub").textContent="买家承担 "+fmtLocal(r.buyerShippingLocal,c.market)+"，平台扣 "+fmtLocal(r.shippingCostLocal,c.market);
     $("oBreakCac").textContent=fmtLocal(r.breakCacLocal,c.market);
     toneClass($("oBreakCac"), c.cacLocal<=r.breakCacLocal ? "good" : "bad");
 
-    $("lineRevenue").textContent=fmtCny(r.revenueCny);
-    $("lineBuyerShipping").textContent="+"+fmtCny(r.effectiveBuyerShippingLocal*c.fx);
-    $("lineSellerShipping").textContent="-"+fmtCny(r.sellerShippingCny);
+    $("lineRevenue").textContent="+"+fmtCny(r.revenueCny);
+    $("lineShippingGross").textContent="-"+fmtCny(r.shippingCostCny);
+    $("lineBuyerShipping").textContent="+"+fmtCny(r.buyerShippingCny);
     $("lineGoods").textContent="-"+fmtCny(r.goodsCostCny);
-    $("linePlatform").textContent="-"+fmtCny(r.platformCostCny+r.marketingCostCny);
+    $("linePlatform").textContent="-"+fmtCny(r.platformCostCny);
+    $("lineMarketing").textContent="-"+fmtCny(r.marketingCostCny);
     $("lineLogistics").textContent="-"+fmtCny(r.fixedReturnCny);
+    $("lineLocalCurrency").textContent=c.market.country+" · "+c.market.code;
+    $("lineLocalNetItem").textContent=fmtLocal(r.netItemLocal,c.market);
+    $("lineLocalGrossShipping").textContent=fmtLocal(r.shippingCostLocal,c.market);
+    $("lineLocalBuyerShipping").textContent=fmtLocal(r.buyerShippingLocal,c.market);
+    $("lineLocalSellerShipping").textContent=fmtLocal(r.sellerShippingLocal,c.market);
+    $("lineLocalCac").textContent=fmtLocal(c.cacLocal,c.market);
+    $("lineLocalBreakCac").textContent=fmtLocal(r.breakCacLocal,c.market);
     $("lineLockDays").textContent=Math.round(r.lockDays)+" 天";
     $("lineCashNeed").textContent=fmtCny0(r.cashNeedCny);
     toneClass($("lineCashNeed"), c.cashCny>=r.cashNeedCny ? "good" : (c.cashCny>=r.cashNeedCny*.7 ? "mid" : "bad"));
