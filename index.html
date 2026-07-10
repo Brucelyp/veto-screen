@@ -140,6 +140,8 @@
   .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
   .metric{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:12px}
   .metric.hero{grid-column:1/-1;background:linear-gradient(180deg,#192721,#121b19)}
+  .metric.recommend{grid-column:1/-1;border-color:rgba(87,211,196,.42);background:linear-gradient(135deg,rgba(87,211,196,.12),rgba(18,27,25,.96) 58%)}
+  .metric.recommend .value{color:var(--cyan)}
   .metric .name{font-size:12px;color:var(--muted);line-height:1.35}
   .metric .value{margin-top:5px;font-size:22px;font-weight:800;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .metric.hero .value{font-size:34px}
@@ -148,8 +150,14 @@
   .read{border:1px solid var(--line);border-radius:8px;background:var(--panel);overflow:hidden;margin-bottom:14px}
   .read-title{padding:10px 12px;border-bottom:1px solid var(--line-soft);background:var(--panel-3);font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
   .read-note{padding:10px 12px;color:var(--muted-2);font-size:11px;line-height:1.55;border-bottom:1px solid var(--line-soft);background:rgba(15,23,21,.35)}
+  .read-note strong{color:var(--ink)}
+  .read-group{padding:7px 12px;border-bottom:1px solid var(--line-soft);background:#0d1614;color:var(--muted-2);font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
   .row{display:flex;justify-content:space-between;gap:14px;align-items:baseline;border-bottom:1px solid var(--line-soft);padding:10px 12px}
   .row:last-child{border-bottom:0}
+  .row.subtotal{background:rgba(23,35,32,.5)}
+  .row.total{background:#192721;border-top:1px solid var(--line);padding-top:12px;padding-bottom:12px}
+  .row.total .k,.row.total .v{color:var(--ink);font-weight:800}
+  .row.profit-line .v{font-size:17px}
   .row .k{font-size:12px;color:var(--muted);line-height:1.35}
   .row .k small{display:block;color:var(--muted-2);font-size:10.5px;margin-top:2px}
   .row .v{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:14px;white-space:nowrap}
@@ -172,10 +180,13 @@
   .saved-empty{padding:12px;color:var(--muted-2);font-size:12px;text-align:center}
   .act{height:28px;border:1px solid var(--line);background:#0b1412;color:var(--muted);border-radius:6px;cursor:pointer;font-size:12px;padding:0 8px}
   .act:hover{border-color:var(--cyan);color:var(--ink)}
-  details{border:1px solid var(--line-soft);border-radius:8px;background:#0b1412;margin-top:12px}
+  details{border:1px solid var(--line-soft);border-radius:8px;background:#0b1412;margin:12px}
   summary{cursor:pointer;padding:11px 12px;color:var(--muted);font-size:12px;list-style:none}
   summary::-webkit-details-marker{display:none}
   .logic{padding:0 12px 13px;color:var(--muted);font-size:12px;line-height:1.7}
+  .logic p{margin:0 0 8px}
+  .logic ul{margin:0;padding-left:18px}
+  .logic li+li{margin-top:5px}
   .logic code{font-family:var(--mono);font-size:11px;color:var(--ink);background:#111d1a;border:1px solid var(--line-soft);border-radius:4px;padding:1px 5px}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(12px);opacity:0;pointer-events:none;background:#0b1412;color:var(--green);border:1px solid var(--green);border-radius:8px;padding:10px 14px;font-size:13px;transition:.18s ease;z-index:30}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -282,7 +293,7 @@
 
       <div class="section cost">
         <p class="section-head">商品成本与平台物流</p>
-        <p class="hint">中国侧成本直接填人民币；平台尾程按克重和区域费率自动算卖家承担部分。</p>
+        <p class="hint">中国侧成本直接填人民币。退货回收只冲减可回收的货物成本；头程、清关、仓储等已发生费用不会被冲回。平台尾程按克重和区域费率计算。</p>
         <div class="subgroup">
           <p class="subgroup-title">人民币成本</p>
           <div class="fields">
@@ -329,8 +340,8 @@
         <div class="fields">
           <div class="field"><label for="returnPct">退款/退货率 <small>按已发出订单</small></label><span class="control"><input id="returnPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="returnHandlingLocal">退货处理成本 <small>逆向物流、检查、弃货</small></label><span class="control"><input id="returnHandlingLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="returnHandlingLocalCny" class="preview">≈ ¥0.00</span></span></div>
-          <div class="field"><label for="returnRecoveryPct">退货货值回收 <small>可二次销售/残值</small></label><span class="control"><input id="returnRecoveryPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
-          <div class="field"><label for="nonRefundFeePct">退货不可退费 <small>平台费未退回比例</small></label><span class="control"><input id="nonRefundFeePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="returnRecoveryPct">退货货值回收 <small>仅抵扣可回收的货物成本</small></label><span class="control"><input id="returnRecoveryPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+          <div class="field"><label for="nonRefundFeePct">退货不可退费 <small>平台百分比费用未退回比例</small></label><span class="control"><input id="nonRefundFeePct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="targetMarginPct">目标净利率 <small>你最低想赚到</small></label><span class="control"><input id="targetMarginPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
           <div class="field"><label for="monthlyUnits">计划月销量 <small>用于月利润和现金占用</small></label><span class="control"><input id="monthlyUnits" class="input" inputmode="decimal"><span class="affix">单</span></span></div>
           <div class="field"><label for="cycleDays">备货到售出 <small>生产+头程+库存天数</small></label><span class="control"><input id="cycleDays" class="input" inputmode="decimal"><span class="affix">天</span></span></div>
@@ -347,15 +358,20 @@
           <div id="oProfit" class="value">--</div>
           <div id="oProfitSub" class="sub">人民币口径，所有本币收入和费用已按汇率折算</div>
         </div>
+        <div class="metric recommend">
+          <div class="name">建议售价（达到目标净利率）</div>
+          <div id="oSuggestedPrice" class="value">--</div>
+          <div id="oSuggestedPriceSub" class="sub">按当前成本、店铺券、退货率和费率反推，并按站点常用最小单位向上取整</div>
+        </div>
         <div class="metric">
-          <div class="name">人民币到手收入 / 单</div>
+          <div class="name">退款后商品收入 / 单</div>
           <div id="oRevenueCny" class="value">--</div>
-          <div class="sub">商品收入扣退货和换汇损耗</div>
+          <div class="sub">券后售价 ×（1 - 退货率），换汇损耗单列为成本</div>
         </div>
         <div class="metric">
           <div class="name">人民币总成本 / 单</div>
           <div id="oTotalCostCny" class="value">--</div>
-          <div class="sub">货品、平台、物流、达人、广告</div>
+          <div class="sub">商品履约、平台、营销、物流退货、换汇损耗</div>
         </div>
         <div class="metric">
           <div class="name">人民币净利率</div>
@@ -368,22 +384,42 @@
           <div id="oMonthSub" class="sub">按计划月销量估算</div>
         </div>
         <div class="metric">
+          <div class="name">保本售价（本币）</div>
+          <div id="oBreakPrice" class="value">--</div>
+          <div class="sub">低于此售价会出现单笔亏损</div>
+        </div>
+        <div class="metric">
           <div class="name">保本 CAC（本币）</div>
           <div id="oBreakCac" class="value">--</div>
-          <div class="sub">广告投放按站点币种参考</div>
+          <div class="sub">当前其他成本不变时的广告上限</div>
         </div>
       </div>
 
       <div class="read">
-        <div class="read-title">人民币拆账 / 单</div>
-        <div class="read-note">本区全部为人民币 ¥。本币输入会先按站点汇率折算，再进入这张利润表。</div>
-        <div class="row"><span class="k">商品到手收入 <small>商品售价 - 店铺券，扣退货和换汇损耗</small></span><span id="lineRevenue" class="v">--</span></div>
-        <div class="row"><span class="k">平台尾程扣费 <small>平台按克重和区域扣除</small></span><span id="lineShippingGross" class="v">--</span></div>
-        <div class="row"><span class="k">买家运费抵扣 <small>买家支付的运费抵扣尾程</small></span><span id="lineBuyerShipping" class="v">--</span></div>
-        <div class="row"><span class="k">货品与中国侧成本 <small>货款、头程、仓储、关税、摊销</small></span><span id="lineGoods" class="v">--</span></div>
-        <div class="row"><span class="k">平台交易费用 <small>佣金、交易费、收款费、活动费、税费</small></span><span id="linePlatform" class="v">--</span></div>
-        <div class="row"><span class="k">达人和获客 <small>达人佣金 + CAC</small></span><span id="lineMarketing" class="v">--</span></div>
-        <div class="row"><span class="k">固定订单费与退货 <small>固定服务费、退货处理费</small></span><span id="lineLogistics" class="v">--</span></div>
+        <div class="read-title">单笔利润流水（人民币）</div>
+        <div class="read-note">这张表可以直接对账：<strong>净利润 = 退款后商品收入 - 总成本</strong>。买家运费只抵扣平台尾程，不计成额外商品收入。</div>
+        <div class="read-group">收入</div>
+        <div class="row"><span class="k">退款后商品收入 <small>（商品售价 - 店铺券）×（1 - 退货率）</small></span><span id="lineRevenue" class="v good">--</span></div>
+        <div class="read-group">成本构成</div>
+        <div class="row subtotal"><span class="k">1. 商品及中国侧履约 <small id="lineGoodsDetail">净货款、头程、清关、仓储、样品与其他</small></span><span id="lineGoods" class="v">--</span></div>
+        <div class="row subtotal"><span class="k">2. 平台费用 <small id="linePlatformDetail">佣金/服务税、交易/收款、固定订单费</small></span><span id="linePlatform" class="v">--</span></div>
+        <div class="row subtotal"><span class="k">3. 达人和获客 <small id="lineMarketingDetail">有效达人佣金、广告 CAC</small></span><span id="lineMarketing" class="v">--</span></div>
+        <div class="row subtotal"><span class="k">4. 物流与退货 <small id="lineLogisticsDetail">平台尾程 - 有效买家运费抵扣 + 退货处理</small></span><span id="lineLogistics" class="v">--</span></div>
+        <div class="row subtotal"><span class="k">5. 换汇/提现损耗 <small id="lineFxLossDetail">按退款后商品收入计算</small></span><span id="lineFxLoss" class="v">--</span></div>
+        <div class="row total"><span class="k">总成本 <small id="lineCostRate">占退款后商品收入 --</small></span><span id="lineTotalCost" class="v">--</span></div>
+        <div class="row total profit-line"><span class="k">人民币净利润 / 单 <small>退款后商品收入 - 总成本</small></span><span id="lineProfit" class="v">--</span></div>
+        <details>
+          <summary>查看计算口径与关键修正</summary>
+          <div class="logic">
+            <ul>
+              <li><code>建议售价</code>：反推达到“目标净利率”的最低售价，再按站点常用最小单位向上取整。</li>
+              <li><code>退货回收</code>：只冲减货物成本，不冲减已发生的头程、清关、仓储和操作费。</li>
+              <li><code>买家运费</code>：按未退货订单比例抵扣平台尾程，且最多抵到尾程金额，不会产生负运费利润。</li>
+              <li><code>达人佣金</code>：按未退货的有效达人订单计算；平台不可退费比例只作用于平台百分比费用。</li>
+              <li><code>换汇损耗</code>：作为单独成本列示，保证收入、总成本和净利润可以逐项相减对上。</li>
+            </ul>
+          </div>
+        </details>
       </div>
 
       <div class="read">
@@ -392,8 +428,8 @@
         <div class="row"><span class="k">当前站点币种</span><span id="lineLocalCurrency" class="v">--</span></div>
         <div class="row"><span class="k">券后商品收入 <small>商品售价 - 店铺券</small></span><span id="lineLocalNetItem" class="v">--</span></div>
         <div class="row"><span class="k">平台尾程扣费</span><span id="lineLocalGrossShipping" class="v">--</span></div>
-        <div class="row"><span class="k">买家承担运费</span><span id="lineLocalBuyerShipping" class="v">--</span></div>
-        <div class="row"><span class="k">卖家承担运费 <small>平台尾程扣费 - 买家承担运费</small></span><span id="lineLocalSellerShipping" class="v">--</span></div>
+        <div class="row"><span class="k">有效买家运费抵扣 <small>输入运费 ×（1 - 退货率），最多抵到平台尾程</small></span><span id="lineLocalBuyerShipping" class="v">--</span></div>
+        <div class="row"><span class="k">卖家承担运费 <small>平台尾程扣费 - 有效买家运费抵扣</small></span><span id="lineLocalSellerShipping" class="v">--</span></div>
         <div class="row"><span class="k">现 CAC</span><span id="lineLocalCac" class="v">--</span></div>
         <div class="row"><span class="k">保本 CAC</span><span id="lineLocalBreakCac" class="v">--</span></div>
         <div class="bar-wrap">
@@ -532,6 +568,16 @@
     var sign = x < 0 ? "-" : "";
     return sign + m.symbol + Math.abs(x).toLocaleString("zh-CN",{minimumFractionDigits:d,maximumFractionDigits:d}) + " " + m.code;
   }
+  function suggestedPriceStep(market){
+    if(market.code==="VND") return 1000;
+    if(market.code==="THB" || market.code==="PHP") return 1;
+    return .1;
+  }
+  function roundPriceUp(price,market){
+    if(price==null || !isFinite(price)) return null;
+    var step=suggestedPriceStep(market);
+    return Math.ceil((price-1e-9)/step)*step;
+  }
   function fmtPct(x){return (x*100).toFixed(1) + "%";}
   function toneClass(el,tone){el.className = el.className.replace(/\b(good|mid|bad|plain|info)\b/g,"").trim()+" "+tone;}
   function setLight(id,state,text){
@@ -622,7 +668,7 @@
       if(el) el.textContent="≈ "+fmtCny(num(id)*c.fx);
     });
     if($("shippingCostResult")) $("shippingCostResult").textContent=fmtLocal(r.sellerShippingLocal,m)+" ≈ "+fmtCny(r.sellerShippingCny);
-    if($("shippingSplitHint")) $("shippingSplitHint").textContent="买家承担 "+fmtLocal(r.buyerShippingLocal,m)+"，平台扣 "+fmtLocal(r.shippingCostLocal,m);
+    if($("shippingSplitHint")) $("shippingSplitHint").textContent="有效抵扣 "+fmtLocal(r.effectiveBuyerShippingLocal,m)+"，平台扣 "+fmtLocal(r.shippingCostLocal,m);
     if($("shippingSteps")) $("shippingSteps").textContent="续重 "+r.shippingSteps+" 段";
     if($("shippingZoneHint")){
       var rate=selectedShippingRate();
@@ -680,29 +726,40 @@
     var keptRatio=1-c.returnRate;
     var feeReturnFactor=keptRatio+c.returnRate*c.nonRefundFee;
     var revenueLocal=netItemLocal*keptRatio;
-    var revenueCny=revenueLocal*c.fx*(1-c.fxLoss);
+    var revenueCny=revenueLocal*c.fx;
+    var fxLossCny=revenueCny*c.fxLoss;
 
     var itemFeeBaseLocal=netItemLocal*feeReturnFactor;
     var orderFeeBaseLocal=collectedLocal*feeReturnFactor;
-    var platformFeeLocal=itemFeeBaseLocal*(c.platform+c.service+c.tax);
+    var platformRateFeeLocal=itemFeeBaseLocal*(c.platform+c.service+c.tax);
     var transactionFeeLocal=orderFeeBaseLocal*(c.transaction+c.payment);
-    var affiliateFeeLocal=itemFeeBaseLocal*c.affiliateShare*c.affiliate;
+    var affiliateFeeLocal=netItemLocal*keptRatio*c.affiliateShare*c.affiliate;
     var marketingLocal=c.cacLocal+affiliateFeeLocal;
     var shipping=calcShippingLocal(c.weightGram,c.shipBaseWeightGram,c.shipBasePriceLocal,c.shipStepPriceLocal);
     var shippingCostLocal=shipping.cost;
     var buyerShippingLocal=c.buyerShipLocal;
-    var effectiveBuyerShippingLocal=buyerShippingLocal;
-    var sellerShippingLocal=shippingCostLocal-effectiveBuyerShippingLocal;
-    var fixedReturnLocal=c.fixedFeeLocal+c.returnRate*c.returnHandlingLocal;
-    var logisticsLocal=sellerShippingLocal+fixedReturnLocal;
+    var effectiveBuyerShippingLocal=Math.min(buyerShippingLocal*keptRatio,shippingCostLocal);
+    var sellerShippingLocal=Math.max(shippingCostLocal-effectiveBuyerShippingLocal,0);
+    var returnHandlingCostLocal=c.returnRate*c.returnHandlingLocal;
+    var logisticsLocal=sellerShippingLocal+returnHandlingCostLocal;
 
     var landedCny=c.productCostCny+c.headFreightCny+c.customsCny+c.warehouseCny;
-    var recoveryCny=landedCny*c.returnRate*c.returnRecovery;
-    var goodsCostCny=landedCny-recoveryCny+c.sampleCny+c.otherFixedCny;
-    var platformCostCny=(platformFeeLocal+transactionFeeLocal)*c.fx;
+    var recoveryCny=c.productCostCny*c.returnRate*c.returnRecovery;
+    var netProductCostCny=c.productCostCny-recoveryCny;
+    var supplyChainCostCny=c.headFreightCny+c.customsCny+c.warehouseCny;
+    var otherGoodsCostCny=c.sampleCny+c.otherFixedCny;
+    var goodsCostCny=netProductCostCny+supplyChainCostCny+otherGoodsCostCny;
+    var platformRateCostCny=platformRateFeeLocal*c.fx;
+    var transactionCostCny=transactionFeeLocal*c.fx;
+    var fixedFeeCny=c.fixedFeeLocal*c.fx;
+    var platformCostCny=platformRateCostCny+transactionCostCny+fixedFeeCny;
+    var affiliateCostCny=affiliateFeeLocal*c.fx;
+    var cacCostCny=c.cacLocal*c.fx;
     var marketingCostCny=marketingLocal*c.fx;
+    var sellerShippingCny=sellerShippingLocal*c.fx;
+    var returnHandlingCostCny=returnHandlingCostLocal*c.fx;
     var logisticsCostCny=logisticsLocal*c.fx;
-    var totalCostCny=goodsCostCny+platformCostCny+marketingCostCny+logisticsCostCny;
+    var totalCostCny=goodsCostCny+platformCostCny+marketingCostCny+logisticsCostCny+fxLossCny;
     var profitCny=revenueCny-totalCostCny;
     var margin=revenueCny>0 ? profitCny/revenueCny : 0;
     var roi=goodsCostCny>0 ? profitCny/goodsCostCny : 0;
@@ -724,9 +781,10 @@
       collectedLocal:collectedLocal,
       revenueLocal:revenueLocal,
       revenueCny:revenueCny,
+      fxLossCny:fxLossCny,
       itemFeeBaseLocal:itemFeeBaseLocal,
       orderFeeBaseLocal:orderFeeBaseLocal,
-      platformFeeLocal:platformFeeLocal,
+      platformRateFeeLocal:platformRateFeeLocal,
       transactionFeeLocal:transactionFeeLocal,
       affiliateFeeLocal:affiliateFeeLocal,
       marketingLocal:marketingLocal,
@@ -736,15 +794,24 @@
       buyerShippingLocal:buyerShippingLocal,
       buyerShippingCny:buyerShippingLocal*c.fx,
       effectiveBuyerShippingLocal:effectiveBuyerShippingLocal,
+      effectiveBuyerShippingCny:effectiveBuyerShippingLocal*c.fx,
       sellerShippingLocal:sellerShippingLocal,
-      sellerShippingCny:sellerShippingLocal*c.fx,
-      fixedReturnLocal:fixedReturnLocal,
-      fixedReturnCny:fixedReturnLocal*c.fx,
+      sellerShippingCny:sellerShippingCny,
+      returnHandlingCostLocal:returnHandlingCostLocal,
+      returnHandlingCostCny:returnHandlingCostCny,
+      fixedFeeCny:fixedFeeCny,
       shippingSteps:shipping.steps,
       landedCny:landedCny,
       recoveryCny:recoveryCny,
+      netProductCostCny:netProductCostCny,
+      supplyChainCostCny:supplyChainCostCny,
+      otherGoodsCostCny:otherGoodsCostCny,
       goodsCostCny:goodsCostCny,
+      platformRateCostCny:platformRateCostCny,
+      transactionCostCny:transactionCostCny,
       platformCostCny:platformCostCny,
+      affiliateCostCny:affiliateCostCny,
+      cacCostCny:cacCostCny,
       marketingCostCny:marketingCostCny,
       logisticsCostCny:logisticsCostCny,
       totalCostCny:totalCostCny,
@@ -782,13 +849,18 @@
   function compute(){
     var r=calculate();
     var c=r.c;
-    lastResult=r;
     var breakPrice=findPrice(function(x){return x.profitCny;});
     var targetPrice=findPrice(function(x){return x.profitCny-x.c.targetMargin*x.revenueCny;});
+    var suggestedPrice=roundPriceUp(targetPrice,c.market);
+    var roundedBreakPrice=roundPriceUp(breakPrice,c.market);
+    r.breakPrice=breakPrice;
+    r.targetPrice=targetPrice;
+    r.suggestedPrice=suggestedPrice;
+    lastResult=r;
 
     $("oProfit").textContent=fmtCny(r.profitCny);
     toneClass($("oProfit"), r.profitCny>0 ? "good" : "bad");
-    $("oProfitSub").textContent="本币参考 "+fmtLocal(r.profitLocal,c.market)+" / 单，ROI "+fmtPct(r.roi);
+    $("oProfitSub").textContent="按已发出订单期望值；本币参考 "+fmtLocal(r.profitLocal,c.market)+" / 单，ROI "+fmtPct(r.roi);
     $("oRevenueCny").textContent=fmtCny(r.revenueCny);
     toneClass($("oRevenueCny"), "plain");
     $("oTotalCostCny").textContent=fmtCny(r.totalCostCny);
@@ -798,20 +870,43 @@
     $("oMonthProfit").textContent=fmtCny0(r.monthlyProfitCny);
     toneClass($("oMonthProfit"), r.monthlyProfitCny>0 ? "good" : "bad");
     $("oMonthSub").textContent="按月销 "+Math.round(c.monthlyUnits).toLocaleString("zh-CN")+" 单";
+    if(suggestedPrice==null){
+      $("oSuggestedPrice").textContent="当前参数不可达";
+      $("oSuggestedPriceSub").textContent="请检查目标净利率、费率和汇率设置";
+    }else{
+      $("oSuggestedPrice").textContent=fmtLocal(suggestedPrice,c.market);
+      if(c.priceLocal+1e-9>=suggestedPrice){
+        $("oSuggestedPriceSub").textContent="当前售价 "+fmtLocal(c.priceLocal,c.market)+" 已达到 "+fmtPct(c.targetMargin)+" 目标净利率";
+      }else{
+        var gap=suggestedPrice-c.priceLocal;
+        var gapPct=c.priceLocal>0 ? gap/c.priceLocal : 0;
+        $("oSuggestedPriceSub").textContent="当前售价还差 "+fmtLocal(gap,c.market)+(c.priceLocal>0?"（需上调 "+fmtPct(gapPct)+"）":"")+"，目标净利率 "+fmtPct(c.targetMargin);
+      }
+    }
+    $("oBreakPrice").textContent=roundedBreakPrice==null?"--":fmtLocal(roundedBreakPrice,c.market);
+    toneClass($("oBreakPrice"), roundedBreakPrice!=null && c.priceLocal+1e-9>=roundedBreakPrice ? "good" : "bad");
     $("oBreakCac").textContent=fmtLocal(r.breakCacLocal,c.market);
     toneClass($("oBreakCac"), c.cacLocal<=r.breakCacLocal ? "good" : "bad");
 
     $("lineRevenue").textContent="+"+fmtCny(r.revenueCny);
-    $("lineShippingGross").textContent="-"+fmtCny(r.shippingCostCny);
-    $("lineBuyerShipping").textContent="+"+fmtCny(r.buyerShippingCny);
     $("lineGoods").textContent="-"+fmtCny(r.goodsCostCny);
+    $("lineGoodsDetail").textContent="净货款 "+fmtCny(r.netProductCostCny)+"（回收抵扣 "+fmtCny(r.recoveryCny)+"）· 头程/清关/仓储 "+fmtCny(r.supplyChainCostCny)+" · 样品/其他 "+fmtCny(r.otherGoodsCostCny);
     $("linePlatform").textContent="-"+fmtCny(r.platformCostCny);
+    $("linePlatformDetail").textContent="佣金/活动/税 "+fmtCny(r.platformRateCostCny)+" · 交易/收款 "+fmtCny(r.transactionCostCny)+" · 固定费 "+fmtCny(r.fixedFeeCny);
     $("lineMarketing").textContent="-"+fmtCny(r.marketingCostCny);
-    $("lineLogistics").textContent="-"+fmtCny(r.fixedReturnCny);
+    $("lineMarketingDetail").textContent="有效达人佣金 "+fmtCny(r.affiliateCostCny)+" · CAC "+fmtCny(r.cacCostCny);
+    $("lineLogistics").textContent="-"+fmtCny(r.logisticsCostCny);
+    $("lineLogisticsDetail").textContent="尾程 "+fmtCny(r.shippingCostCny)+" - 有效买家抵扣 "+fmtCny(r.effectiveBuyerShippingCny)+" + 退货处理 "+fmtCny(r.returnHandlingCostCny);
+    $("lineFxLoss").textContent="-"+fmtCny(r.fxLossCny);
+    $("lineFxLossDetail").textContent="退款后商品收入 "+fmtCny(r.revenueCny)+" × "+fmtPct(c.fxLoss);
+    $("lineTotalCost").textContent="-"+fmtCny(r.totalCostCny);
+    $("lineCostRate").textContent="占退款后商品收入 "+(r.revenueCny>0?fmtPct(r.totalCostCny/r.revenueCny):"--");
+    $("lineProfit").textContent=(r.profitCny>=0?"+":"")+fmtCny(r.profitCny);
+    toneClass($("lineProfit"),r.profitCny>0?"good":"bad");
     $("lineLocalCurrency").textContent=c.market.country+" · "+c.market.code;
     $("lineLocalNetItem").textContent=fmtLocal(r.netItemLocal,c.market);
     $("lineLocalGrossShipping").textContent=fmtLocal(r.shippingCostLocal,c.market);
-    $("lineLocalBuyerShipping").textContent=fmtLocal(r.buyerShippingLocal,c.market);
+    $("lineLocalBuyerShipping").textContent=fmtLocal(r.effectiveBuyerShippingLocal,c.market);
     $("lineLocalSellerShipping").textContent=fmtLocal(r.sellerShippingLocal,c.market);
     $("lineLocalCac").textContent=fmtLocal(c.cacLocal,c.market);
     $("lineLocalBreakCac").textContent=fmtLocal(r.breakCacLocal,c.market);
@@ -834,7 +929,7 @@
     $("cashHaveLabel").textContent="可投入 "+fmtCny0(c.cashCny);
 
     updateFxPreviews(c,r);
-    updateVerdict(r,breakPrice,targetPrice);
+    updateVerdict(r,roundedBreakPrice,suggestedPrice);
   }
 
   function updateVerdict(r,breakPrice,targetPrice){
@@ -940,12 +1035,13 @@
     var lines=[
       "【TikTok Shop SEA 利润测算】"+c.market.country+" "+c.market.code+"｜结论: "+$("stampText").textContent,
       "售价: "+fmtLocal(c.priceLocal,c.market)+" ("+fmtCny(c.priceLocal*c.fx)+")，店铺券: "+fmtLocal(c.sellerVoucherLocal,c.market),
-      "克重: "+Math.round(c.weightGram)+"g，买家承担运费: "+fmtLocal(r.buyerShippingLocal,c.market)+"，卖家承担运费: "+fmtLocal(r.sellerShippingLocal,c.market)+"，平台扣费: "+fmtLocal(r.shippingCostLocal,c.market),
+      "建议售价: "+(r.suggestedPrice==null?"不可达":fmtLocal(r.suggestedPrice,c.market))+"，目标净利率: "+fmtPct(c.targetMargin)+"，保本售价: "+(r.breakPrice==null?"不可达":fmtLocal(roundPriceUp(r.breakPrice,c.market),c.market)),
+      "克重: "+Math.round(c.weightGram)+"g，买家有效运费抵扣: "+fmtLocal(r.effectiveBuyerShippingLocal,c.market)+"，卖家承担运费: "+fmtLocal(r.sellerShippingLocal,c.market)+"，平台尾程: "+fmtLocal(r.shippingCostLocal,c.market),
       "人民币净利润/单: "+fmtCny(r.profitCny)+"，净利率: "+fmtPct(r.margin)+"，月利润: "+fmtCny0(r.monthlyProfitCny),
-      "成本拆分: 货值中国侧 "+fmtCny(r.goodsCostCny)+"｜平台+营销 "+fmtCny(r.platformCostCny+r.marketingCostCny)+"｜固定费/退货 "+fmtCny(r.fixedReturnCny),
+      "成本拆分: 商品及中国侧 "+fmtCny(r.goodsCostCny)+"｜平台 "+fmtCny(r.platformCostCny)+"｜达人/CAC "+fmtCny(r.marketingCostCny)+"｜物流/退货 "+fmtCny(r.logisticsCostCny)+"｜换汇损耗 "+fmtCny(r.fxLossCny)+"｜总成本 "+fmtCny(r.totalCostCny),
       "CAC: "+fmtLocal(c.cacLocal,c.market)+"，保本 CAC: "+fmtLocal(r.breakCacLocal,c.market)+"，目标 CAC 上限: "+(r.targetCacLocal>0?fmtLocal(r.targetCacLocal,c.market):"不可达"),
       "现金占用: "+fmtCny0(r.cashNeedCny)+"，可投入现金: "+fmtCny0(c.cashCny)+"，锁定天数: "+Math.round(r.lockDays)+" 天",
-      "口径: 含平台佣金、交易费、达人佣金、获客成本、头程、按克重拆分的买家/卖家运费、退货、换汇损耗。"
+      "口径: 退货回收只抵货物成本；买家运费按有效订单抵扣且不超过平台尾程；达人佣金按有效达人单计算；换汇损耗单列。"
     ].join("\n");
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(lines).then(function(){toast("已复制摘要");}).catch(function(){fallbackCopy(lines);});
