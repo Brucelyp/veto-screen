@@ -136,6 +136,14 @@
   .fx-tools .converter .control{grid-area:control}
   .fx-tools .converter-result{grid-area:result;line-height:1.25}
   .notice{border:1px solid var(--line-soft);background:#0b1412;border-radius:8px;padding:10px 12px;color:var(--muted);font-size:12px;line-height:1.55}
+  .discount-tool{margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft)}
+  .discount-tool-grid{display:grid;grid-template-columns:minmax(180px,1fr) repeat(2,minmax(160px,1fr)) auto;gap:12px;align-items:end}
+  .discount-item{min-width:0}
+  .discount-label{display:block;margin-bottom:6px;color:var(--muted);font-size:12px;line-height:1.35}
+  .discount-value{min-height:38px;justify-content:flex-start;text-align:left;font-size:15px}
+  .discount-action{height:38px;white-space:nowrap}
+  .discount-formula{margin-top:9px;color:var(--muted-2);font-family:var(--mono);font-size:11px;line-height:1.55}
+  .discount-formula strong{color:var(--cyan)}
   .notice strong{color:var(--ink)}
   .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
   .metric{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:12px}
@@ -217,6 +225,8 @@
     .save-line{grid-template-columns:1fr}
     .converter{grid-template-columns:1fr}
     .converter-result{text-align:left}
+    .discount-tool-grid{grid-template-columns:1fr 1fr}
+    .discount-action{width:100%}
   }
   @media (max-width:430px){
     .field,.field.wide,.fx-row{grid-template-columns:1fr}
@@ -228,6 +238,7 @@
         "result";
     }
     .fx-tools .converter-result{text-align:left}
+    .discount-tool-grid{grid-template-columns:1fr}
   }
   @media (prefers-reduced-motion:reduce){
     *{transition:none!important;scroll-behavior:auto!important}
@@ -288,6 +299,25 @@
           <div class="field"><label for="sellerVoucherLocal">店铺券/折扣 <small>卖家承担的券补</small></label><span class="control"><input id="sellerVoucherLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="sellerVoucherLocalCny" class="preview">≈ ¥0.00</span></span></div>
           <div class="field"><label for="buyerShipLocal">买家承担运费 <small>买家实际支付，包邮填 0</small></label><span class="control"><input id="buyerShipLocal" class="input" inputmode="decimal"><span class="affix local-affix">RM</span><span id="buyerShipLocalCny" class="preview">≈ ¥0.00</span></span></div>
           <div class="field"><label for="fxLossPct">换汇/提现损耗 <small>结汇、收款通道损耗</small></label><span class="control"><input id="fxLossPct" class="input" inputmode="decimal"><span class="affix">%</span></span></div>
+        </div>
+        <div class="discount-tool">
+          <p class="subgroup-title">折扣反推标价 <small style="display:block;margin-top:4px;color:var(--muted-2);font-weight:400">以当前券后商品收入为目标成交价，只输入想打的折扣即可自动反推。</small></p>
+          <div class="discount-tool-grid">
+            <div class="discount-item">
+              <label class="discount-label" for="couponDiscountPct">目标折扣 <small>例如输入 60，代表打 6 折</small></label>
+              <span class="control"><input id="couponDiscountPct" class="input" inputmode="decimal" value="60"><span class="affix">%</span></span>
+            </div>
+            <div class="discount-item">
+              <span class="discount-label">建议折前标价</span>
+              <span id="discountListPrice" class="result-pill discount-value">--</span>
+            </div>
+            <div class="discount-item">
+              <span class="discount-label">需要涨价 / 券金额</span>
+              <span id="discountIncrease" class="result-pill discount-value">--</span>
+            </div>
+            <button id="applyDiscountBtn" class="btn primary discount-action" type="button">应用到售价和店铺券</button>
+          </div>
+          <div id="discountFormula" class="discount-formula">计算公式：折前标价 = 目标成交价 ÷ 折扣。</div>
         </div>
       </div>
 
@@ -539,7 +569,7 @@
   };
 
   var fieldIds = [
-    "fx","priceLocal","sellerVoucherLocal","buyerShipLocal","fxLossPct",
+    "fx","priceLocal","sellerVoucherLocal","buyerShipLocal","fxLossPct","couponDiscountPct",
     "productCostCny","headFreightCny","customsCny","warehouseCny","sampleCny","otherFixedCny",
     "weightGram","shipBaseWeightGram","shipBasePriceLocal","shipStepPriceLocal","returnHandlingLocal","fixedFeeLocal",
     "platformPct","transactionPct","paymentPct","servicePct","taxPct","affiliateSharePct","affiliatePct","cacLocal",
@@ -656,6 +686,56 @@
     if(weight<=0) return {cost:0, steps:0};
     var steps=Math.ceil(Math.max(weight-baseWeight,0)/10);
     return {cost:basePrice+steps*stepPrice, steps:steps};
+  }
+
+  function discountPricing(){
+    var m=currentMarket();
+    var targetLocal=Math.max(num("priceLocal")-num("sellerVoucherLocal"),0);
+    var discountPct=num("couponDiscountPct");
+    var discountRate=discountPct/100;
+    if(!(discountRate>0 && discountRate<=1) || targetLocal<=0){
+      return {valid:false, market:m, targetLocal:targetLocal, discountPct:discountPct, discountRate:discountRate};
+    }
+    var listPriceLocal=targetLocal/discountRate;
+    var increaseLocal=listPriceLocal-targetLocal;
+    return {
+      valid:true, market:m, targetLocal:targetLocal, discountPct:discountPct, discountRate:discountRate,
+      listPriceLocal:listPriceLocal, increaseLocal:increaseLocal
+    };
+  }
+
+  function updateDiscountTool(){
+    var d=discountPricing();
+    if(!d.valid){
+      $("discountListPrice").textContent="--";
+      $("discountIncrease").textContent="--";
+      $("applyDiscountBtn").disabled=true;
+      $("discountFormula").textContent=d.targetLocal<=0
+        ? "请先填写大于 0 的商品售价；当前目标成交价按“商品售价 - 店铺券”计算。"
+        : "折扣需大于 0 且不超过 100，例如 60 代表打 6 折。";
+      return;
+    }
+    $("discountListPrice").textContent=fmtLocal(d.listPriceLocal,d.market);
+    $("discountIncrease").textContent=fmtLocal(d.increaseLocal,d.market);
+    $("applyDiscountBtn").disabled=false;
+    $("discountFormula").innerHTML="目标成交价 <strong>"+fmtLocal(d.targetLocal,d.market)+"</strong> ÷ "+d.discountPct.toFixed(2).replace(/\.00$/,'')+"% = 折前标价 <strong>"+fmtLocal(d.listPriceLocal,d.market)+"</strong>；需涨价 <strong>"+fmtLocal(d.increaseLocal,d.market)+"</strong>。";
+  }
+
+  function applyDiscountPricing(){
+    var d=discountPricing();
+    if(!d.valid){
+      updateDiscountTool();
+      toast("请检查商品售价和目标折扣");
+      return;
+    }
+    var digits=decimalsFor(d.market.code);
+    var factor=Math.pow(10,digits);
+    var listPrice=Math.round(d.listPriceLocal*factor)/factor;
+    var voucher=Math.round((listPrice-d.targetLocal)*factor)/factor;
+    set("priceLocal",listPrice);
+    set("sellerVoucherLocal",voucher);
+    compute();
+    toast("已应用：折前 "+fmtLocal(listPrice,d.market)+"，券 "+fmtLocal(voucher,d.market));
   }
 
   function updateFxPreviews(c, r){
@@ -929,6 +1009,7 @@
     $("cashHaveLabel").textContent="可投入 "+fmtCny0(c.cashCny);
 
     updateFxPreviews(c,r);
+    updateDiscountTool();
     updateVerdict(r,roundedBreakPrice,suggestedPrice);
   }
 
@@ -1086,6 +1167,7 @@
     $("resetBtn").addEventListener("click",function(){applyMarketDefaults(true);});
     $("clearBtn").addEventListener("click",clearVariableCosts);
     $("copyBtn").addEventListener("click",copySummary);
+    $("applyDiscountBtn").addEventListener("click",applyDiscountPricing);
     $("saveBtn").addEventListener("click",function(){
       var name=$("caseName").value.trim() || (currentMarket().country+" 方案 "+(loadCases().length+1));
       var list=loadCases();
